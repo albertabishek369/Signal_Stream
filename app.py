@@ -15,7 +15,7 @@ from blueprints.emails import send_renewal_reminder_email, send_downgrade_email
 
 # Load environment variables from .env file
 load_dotenv()
-app = Flask(__name__)
+
 def check_subscriptions(app):
     """
     A daily job to check subscription statuses.
@@ -121,4 +121,4 @@ def create_app(config_class=Config):
 
 if __name__ == '__main__':
     app = create_app()
-    app.run( debug=False, use_reloader=False)
+    app.run(host="0.0.0.0", port=5000, debug=False, use_reloader=False)
