@@ -23,3 +23,5 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = os.getenv('SQLALCHEMY_TRACK_MODIFICATIONS', 'False').lower() in ['false', 'off', '0']
 
     SCHEDULER_API_ENABLED = True
+    OAUTHLIB_INSECURE_TRANSPORT = '0'
+    PREFERRED_URL_SCHEME  = 'https'
