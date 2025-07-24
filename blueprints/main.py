@@ -169,7 +169,7 @@ def settings():
 def create_subscription():
     user_id = current_user.id
     plan_type = request.get_json().get('plan_type')
-    plan_ids = {'founder': 'plan_QvD8H0pCE6YRJB', 'scale': 'plan_QvD8dwCCxpYVur'}
+    plan_ids = {'founder': 'plan_QwswYisjnDCDY6', 'scale': 'plan_Qwt1O8dXzFcNNF'}
     
     if plan_type not in plan_ids:
         return jsonify({'error': 'Invalid plan type'}), 400
@@ -271,3 +271,47 @@ def privacy_policy():
     streams = Stream.query.filter_by(user_id=user_id).all()
     products = Product.query.filter_by(user_id=user_id).all()
     return render_template('privacy.html', streams=streams, products=products)
+
+@main_bp.route('/cancel-subscription', methods=['POST'])
+@login_required
+def cancel_subscription():
+    """Cancels the user's active Razorpay subscription."""
+    user_id = current_user.id
+    sub = Subscription.query.filter_by(user_id=user_id, status='active').first()
+
+    if not sub or not sub.razorpay_subscription_id:
+        flash('No active subscription found to cancel.', 'danger')
+        return redirect(url_for('main.settings'))
+
+    try:
+        # Tell Razorpay to cancel the subscription at the end of the current billing cycle
+        razorpay_client.subscription.cancel(sub.razorpay_subscription_id)
+        
+        # Update our local database status
+        sub.status = 'canceled'
+        db.session.commit()
+        
+        flash('Your subscription has been canceled. You will retain access until the end of the current billing period.', 'success')
+    except Exception as e:
+        current_app.logger.error(f"Error canceling subscription for user {user_id}: {e}")
+        flash('There was an error canceling your subscription. Please contact support.', 'danger')
+        
+    return redirect(url_for('main.settings'))
+
+
+@main_bp.route('/reactivate-subscription', methods=['POST'])
+@login_required
+def reactivate_subscription():
+    """Reactivates a user's canceled Razorpay subscription."""
+    user_id = current_user.id
+    sub = Subscription.query.filter_by(user_id=user_id, status='canceled').first()
+
+    if not sub:
+        flash('No canceled subscription found to reactivate.', 'danger')
+        return redirect(url_for('main.settings'))
+    
+    # NOTE: Razorpay does not have a direct "reactivate" API.
+    # The standard flow is to guide the user to subscribe again.
+    # This provides a clear path for the user.
+    flash('To reactivate your plan, please choose it again from the pricing page.', 'info')
+    return redirect(url_for('main.pricing'))

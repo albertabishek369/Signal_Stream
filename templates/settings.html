@@ -17,16 +17,16 @@
     .content-card {
         background-color: var(--white);
         border-radius: 12px;
-        padding: 2rem;
+        padding: 2.5rem;
         box-shadow: var(--shadow-lg);
         animation: fadeInSlideUp 0.5s ease-out forwards;
     }
     .page-header {
-        font-size: 1.75rem;
-        font-weight: 700;
+        font-size: 2.5rem;
+        font-weight: 800;
         color: var(--navy);
         padding-bottom: 1.5rem;
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
         border-bottom: 1px solid var(--off-white);
     }
     .settings-section {
@@ -39,7 +39,6 @@
         margin-bottom: 1rem;
     }
     
-    /* Card for displaying the current plan */
     .plan-card {
         background-color: var(--off-white);
         padding: 1.5rem;
@@ -80,8 +79,18 @@
         padding-top: 1.5rem;
         border-top: 1px solid #E2E8F0;
     }
+    
+    .btn-danger {
+        background-color: #FFF1F2;
+        color: #DC2626;
+        font-weight: 600;
+        border: none;
+    }
+    .btn-danger:hover {
+        background-color: #FEE2E2;
+        color: #B91C1C;
+    }
 
-    /* Card for the 'Upgrade' Call-to-Action */
     .upgrade-cta-card {
         background-color: var(--white);
         padding: 2rem;
@@ -99,22 +108,20 @@
         color: #4A5568;
         margin: 0 0 1.5rem 0;
     }
-
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
 <div class="page-layout">
     <div class="sidebar-wrapper">
         {% include "includes/sidebar.html" %}
     </div>
 
     <main class="content-card">
-        <h2 class="page-header">Settings</h2>
+        <h1 class="page-header">Settings</h1>
 
         <div class="settings-section">
-            <h3 class="section-title">Current Plan</h3>
+            <h3 class="section-title">Subscription Management</h3>
             
             {% if subscription and subscription.plan_type != 'free' %}
                 <div class="plan-card">
@@ -123,19 +130,30 @@
                             <h4>{{ subscription.plan_type|capitalize }} Plan</h4>
                             <p>
                                 {% if subscription.status == 'active' and subscription.current_period_end %}
-                                    Renews on {{ subscription.current_period_end.strftime('%B %d, %Y') }}
-                                {% elif subscription.status == 'canceled' %}
-                                    Subscription canceled.
+                                    Your plan renews on {{ subscription.current_period_end.strftime('%B %d, %Y') }}.
+                                {% elif subscription.status == 'canceled' and subscription.current_period_end %}
+                                    Your access will end on {{ subscription.current_period_end.strftime('%B %d, %Y') }}.
                                 {% else %}
-                                    Status pending.
+                                    Your plan is currently {{ subscription.status }}.
                                 {% endif %}
                             </p>
                         </div>
                         <span class="status-badge {{ subscription.status }}">{{ subscription.status|capitalize }}</span>
                     </div>
-                    <!-- <div class="plan-card-footer">
-                        <a href="#" class="btn btn-secondary">Manage Subscription</a>
-                    </div> -->
+
+                    <div class="plan-card-footer">
+                        {% if subscription.status == 'active' %}
+                            <form action="{{ url_for('main.cancel_subscription') }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel your subscription? This will prevent future charges.');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-danger">Cancel Subscription</button>
+                            </form>
+                        {% elif subscription.status == 'canceled' %}
+                            <form action="{{ url_for('main.reactivate_subscription') }}" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn">Re-activate Plan</button>
+                            </form>
+                        {% endif %}
+                    </div>
                 </div>
             {% else %}
                 <div class="upgrade-cta-card">
@@ -147,8 +165,6 @@
                 </div>
             {% endif %}
         </div>
-
-        </main>
-</div>
+    </main>
 </div>
 {% endblock %}
