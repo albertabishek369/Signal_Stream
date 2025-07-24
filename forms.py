@@ -73,3 +73,16 @@ class PasswordSetupForm(FlaskForm):
         ('Europe/London', 'GMT (London)')
     ], default='UTC', validators=[DataRequired()])
     submit = SubmitField('Set Password')
+
+
+# **NEW:** Form for updating user profile information
+class ProfileForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=50)])
+    phone = StringField('Phone Number', validators=[Optional(), Length(min=10, max=20)])
+    timezone = SelectField('Time Zone', choices=[
+        ('UTC', 'UTC'),
+        ('Asia/Kolkata', 'IST (India)'),
+        ('America/New_York', 'EST (New York)'),
+        ('Europe/London', 'GMT (London)')
+    ], validators=[DataRequired()])
+    submit = SubmitField('Save Changes')

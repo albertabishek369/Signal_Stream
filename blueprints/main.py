@@ -1,7 +1,7 @@
 import uuid
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash, current_app
 # **FIX:** Import the new constant from forms.py
-from forms import ProductForm, StreamForm, REDDIT_COMMUNITY_CHOICES
+from forms import ProductForm, ProfileForm, StreamForm, REDDIT_COMMUNITY_CHOICES
 
 from models import Product, Stream, Lead, Subscription, PlanLimit, Profile
 from extensions import db, razorpay_client, csrf
@@ -148,28 +148,53 @@ def pricing():
     reason = request.args.get('reason')
     return render_template('pricing.html', reason=reason)
 
-@main_bp.route('/settings')
+@main_bp.route('/settings', methods=['GET'])
 @login_required
 def settings():
     user_id = current_user.id
+    
+    # **MODIFIED:** Create an instance of the ProfileForm and pre-populate it
+    profile_form = ProfileForm(obj=current_user)
+    
     subscription = Subscription.query.filter_by(user_id=user_id).order_by(Subscription.created_at.desc()).first()
     if not subscription:
         subscription = Subscription(user_id=user_id, plan_type='free', status='active')
         db.session.add(subscription)
         db.session.commit()
     
-    # For sidebar
     products = Product.query.filter_by(user_id=user_id).all()
     streams = Stream.query.filter_by(user_id=user_id).all()
     
-    return render_template('settings.html', subscription=subscription, products=products, streams=streams)
+    # **MODIFIED:** Pass the profile_form to the template
+    return render_template('settings.html', subscription=subscription, products=products, streams=streams, profile_form=profile_form)
+
+
+# **NEW:** Add this route to handle profile updates
+@main_bp.route('/update-profile', methods=['POST'])
+@login_required
+def update_profile():
+    form = ProfileForm()
+    if form.validate_on_submit():
+        # Update user's profile with the new data
+        current_user.username = form.username.data
+        current_user.phone = form.phone.data
+        current_user.timezone = form.timezone.data
+        db.session.commit()
+        flash('Your profile has been updated successfully!', 'success')
+    else:
+        # If validation fails, flash the errors
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"Error in {getattr(form, field).label.text}: {error}", 'danger')
+                
+    return redirect(url_for('main.settings'))
 
 @main_bp.route('/create-subscription', methods=['POST'])
 @login_required
 def create_subscription():
     user_id = current_user.id
     plan_type = request.get_json().get('plan_type')
-    plan_ids = {'founder': 'plan_Pt9lnya6jJDPgN', 'scale': 'plan_Qwt1O8dXzFcNNF'}
+    plan_ids = {'founder': 'plan_QwswYisjnDCDY6', 'scale': 'plan_Qwt1O8dXzFcNNF'}
     
     if plan_type not in plan_ids:
         return jsonify({'error': 'Invalid plan type'}), 400
