@@ -250,3 +250,24 @@ def razorpay_webhook():
         current_app.logger.info(f"Subscription {sub_to_update.id} for user {user.id} was updated to '{sub_to_update.status}'")
 
     return jsonify({'status': 'success'})
+
+
+@main_bp.route('/terms') 
+@login_required
+def terms_of_service():
+    """Renders the Terms of Service page."""
+    # These queries are necessary to correctly render the sidebar
+    user_id = current_user.id
+    streams = Stream.query.filter_by(user_id=user_id).all()
+    products = Product.query.filter_by(user_id=user_id).all()
+    return render_template('terms.html', streams=streams, products=products)
+
+@main_bp.route('/privacy')
+@login_required
+def privacy_policy():
+    """Renders the Privacy Policy page."""
+    # These queries are necessary to correctly render the sidebar
+    user_id = current_user.id
+    streams = Stream.query.filter_by(user_id=user_id).all()
+    products = Product.query.filter_by(user_id=user_id).all()
+    return render_template('privacy.html', streams=streams, products=products)

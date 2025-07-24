@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy - Signal Stream{% endblock %}
+
+{% block styles %}
+<style>
+    .page-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        padding: 1rem 0;
+    }
+    .sidebar-wrapper {
+        display: flex;
+        justify-content: center;
+    }
+    .content-card {
+        background-color: var(--white);
+        border-radius: 12px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-lg);
+        animation: fadeInSlideUp 0.5s ease-out forwards;
+    }
+    .page-header {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--navy);
+        padding-bottom: 1.5rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--off-white);
+    }
+    .last-updated {
+        font-size: 0.9rem;
+        color: var(--gray-text);
+        margin-bottom: 2rem;
+    }
+    .legal-content h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--navy);
+        margin-top: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    .legal-content p, .legal-content li {
+        color: #4A5568;
+        line-height: 1.7;
+        font-size: 1.05rem;
+    }
+    .legal-content ul, .legal-content ol {
+        padding-left: 1.5rem;
+    }
+    .legal-content a {
+        color: var(--teal);
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .legal-content a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-layout">
+    <div class="sidebar-wrapper">
+        {% include "includes/sidebar.html" %}
+    </div>
+
+    <main class="content-card">
+        <h1 class="page-header">Privacy Policy</h1>
+        <p class="last-updated">Last Updated: July 24, 2025</p>
+
+        <div class="legal-content">
+            <p>Signal Stream ("we," "us," or "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Service.</p>
+            
+            <h2>1. Information We Collect</h2>
+            <p>We collect information that you provide directly to us and information that is collected automatically.</p>
+            <ul>
+                <li><strong>Account Information:</strong> When you register, we collect your username, email address, phone number, and password (stored as a secure hash).</li>
+                <li><strong>Payment Information:</strong> When you subscribe, we use a third-party payment processor (Razorpay) to handle your payment details. We do not store your credit card information on our servers.</li>
+                <li><strong>User Content:</strong> We collect the information you provide when creating Products and Streams, such as product descriptions and target keywords.</li>
+                <li><strong>Usage Data:</strong> We may collect information about your interactions with the Service, such as the pages you visit and the features you use.</li>
+            </ul>
+
+            <h2>2. How We Use Your Information</h2>
+            <p>We use the information we collect to:</p>
+            <ul>
+                <li>Provide, operate, and maintain our Service.</li>
+                <li>Process your subscription payments and manage your account.</li>
+                <li>Communicate with you, including sending service-related emails and responding to support requests.</li>
+                <li>Improve our Service by analyzing usage patterns.</li>
+                <li>Prevent fraudulent activity and ensure the security of our platform.</li>
+            </ul>
+
+            <h2>3. How We Share Your Information</h2>
+            <p>We do not sell your personal information. We may share your information only in the following situations:</p>
+            <ul>
+                <li><strong>With Service Providers:</strong> We share information with third-party vendors who perform services on our behalf, such as payment processing (Razorpay) and cloud hosting (Railway).</li>
+                <li><strong>For Legal Reasons:</strong> We may disclose your information if required by law or in response to a valid legal request.</li>
+            </ul>
+
+            <h2>4. Data Security</h2>
+            <p>We implement a variety of security measures to maintain the safety of your personal information. Passwords are encrypted, and all data is transmitted over a secure (SSL) connection. However, no method of transmission over the Internet is 100% secure, and we cannot guarantee its absolute security.</p>
+            
+            <h2>5. Your Rights</h2>
+            <p>You have the right to access, update, or delete your personal information at any time. You can manage most of your information from your account settings page or by contacting us directly.</p>
+
+            <h2>6. Third-Party Data</h2>
+            <p>Our Service finds leads by analyzing publicly available data from third-party platforms like Reddit and YouTube. We are not responsible for the privacy practices of these platforms. We only process public information in accordance with their terms of service.</p>
+            
+            <h2>7. Changes to This Policy</h2>
+            <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the "Last Updated" date.</p>
+
+            <h2>8. Contact Us</h2>
+            <p>If you have any questions about this Privacy Policy, please contact us at <a href="mailto:privacy@signalstream.app">privacy@signalstream.app</a>.</p>
+        </div>
+    </main>
+</div>
+{% endblock %}

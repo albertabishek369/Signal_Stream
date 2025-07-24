@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Terms of Service - Signal Stream{% endblock %}
+
+{% block styles %}
+<style>
+    .page-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        padding: 1rem 0;
+    }
+    .sidebar-wrapper {
+        display: flex;
+        justify-content: center;
+    }
+    .content-card {
+        background-color: var(--white);
+        border-radius: 12px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-lg);
+        animation: fadeInSlideUp 0.5s ease-out forwards;
+    }
+    .page-header {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--navy);
+        padding-bottom: 1.5rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--off-white);
+    }
+    .last-updated {
+        font-size: 0.9rem;
+        color: var(--gray-text);
+        margin-bottom: 2rem;
+    }
+    .legal-content h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--navy);
+        margin-top: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    .legal-content p, .legal-content li {
+        color: #4A5568;
+        line-height: 1.7;
+        font-size: 1.05rem;
+    }
+    .legal-content ul, .legal-content ol {
+        padding-left: 1.5rem;
+    }
+    .legal-content a {
+        color: var(--teal);
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .legal-content a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-layout">
+    <div class="sidebar-wrapper">
+        {% include "includes/sidebar.html" %}
+    </div>
+
+    <main class="content-card">
+        <h1 class="page-header">Terms of Service</h1>
+        <p class="last-updated">Last Updated: July 24, 2025</p>
+
+        <div class="legal-content">
+            <p>Welcome to Signal Stream! These Terms of Service ("Terms") govern your access to and use of our web application, services, and APIs (collectively, the "Service"). Please read these Terms carefully before using the Service.</p>
+            <p>By accessing or using our Service, you agree to be bound by these Terms and our <a href="{{ url_for('main.privacy_policy') }}">Privacy Policy</a>.</p>
+
+            <h2>1. User Accounts</h2>
+            <p>To use most features of the Service, you must register for an account. You agree to provide accurate, current, and complete information during registration and to keep this information updated. You are responsible for safeguarding your password and for all activities that occur under your account. You must notify us immediately of any unauthorized use of your account.</p>
+
+            <h2>2. Subscriptions and Payments</h2>
+            <p>Our Service is offered on a subscription basis. By purchasing a subscription, you authorize us to charge your chosen payment method (via our third-party payment processor, Razorpay) on a recurring basis. Subscriptions will automatically renew at the end of each billing cycle unless you cancel. You can cancel your subscription at any time from your settings page. Cancellations will take effect at the end of the current billing period.</p>
+
+            <h2>3. Use of the Service</h2>
+            <p>We grant you a limited, non-exclusive, non-transferable, and revocable license to use the Service in accordance with these Terms. You agree not to:</p>
+            <ul>
+                <li>Use the Service for any illegal or unauthorized purpose.</li>
+                <li>Scrape, reverse-engineer, or otherwise attempt to access the source code of the Service.</li>
+                <li>Resell or sublicense the Service without our express written permission.</li>
+                <li>Use the Service in a way that violates the terms of service of any third-party platforms we monitor (e.g., Reddit, YouTube).</li>
+            </ul>
+            <p>The Service relies on public data from third-party platforms. We do not guarantee the accuracy, availability, or quality of the leads generated, as they are based on publicly available information and AI analysis.</p>
+
+            <h2>4. Your Content</h2>
+            <p>You retain full ownership of the content you create within the Service, including your Product definitions and Stream configurations ("Your Content"). However, you grant Signal Stream a worldwide, royalty-free license to use, reproduce, modify, and process Your Content solely for the purpose of providing and improving the Service for you.</p>
+
+            <h2>5. Termination</h2>
+            <p>You can terminate your account at any time. We reserve the right to suspend or terminate your account without notice if you are in breach of these Terms. Upon termination, your right to use the Service will cease immediately.</p>
+
+            <h2>6. Limitation of Liability</h2>
+            <p>To the maximum extent permitted by law, Signal Stream shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, resulting from your use of the Service.</p>
+
+            <h2>7. Changes to Terms</h2>
+            <p>We may modify these Terms from time to time. If we make material changes, we will notify you via email or through the Service. Your continued use of the Service after the changes take effect constitutes your acceptance of the new Terms.</p>
+
+            <h2>8. Contact Us</h2>
+            <p>If you have any questions about these Terms, please contact us at <a href="mailto:support@signalstream.app">support@signalstream.app</a>.</p>
+        </div>
+    </main>
+</div>
+{% endblock %}
