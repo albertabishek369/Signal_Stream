@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Pricing - Signal Stream{% endblock %}
+
+{% block styles %}
+<style>
+    :root {
+        --teal-gradient: linear-gradient(135deg, var(--teal), #2DD4BF);
+    }
+    .pricing-section {
+        padding: 5rem 0;
+        animation: fadeIn 0.8s ease-in-out;
+    }
+    .pricing-header {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+    .pricing-header h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--navy);
+        letter-spacing: -1px;
+        margin-bottom: 1rem;
+    }
+    .pricing-header p {
+        font-size: 1.25rem;
+        color: var(--gray-text);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .pricing-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    @media (min-width: 768px) {
+        .pricing-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+    .pricing-card {
+        background-color: var(--white);
+        border-radius: 12px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-md);
+        transition: var(--transition-medium);
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #E2E8F0;
+        animation: slideUp 0.6s ease-out forwards;
+        opacity: 0;
+    }
+    .pricing-card:nth-child(2) { animation-delay: 0.1s; }
+    .pricing-card:nth-child(3) { animation-delay: 0.2s; }
+    .pricing-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--shadow-lg);
+    }
+    .pricing-card.popular {
+        position: relative;
+        border: 2px solid var(--teal);
+        transform: scale(1.05);
+    }
+    @media (max-width: 767px) {
+        .pricing-card.popular {
+             transform: scale(1);
+        }
+    }
+    .popular-badge {
+        position: absolute;
+        top: -18px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--teal-gradient);
+        color: var(--white);
+        padding: 6px 16px;
+        border-radius: 99px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        box-shadow: 0 2px 5px rgba(20, 184, 166, 0.4);
+    }
+    .plan-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--navy);
+    }
+    .plan-price {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--navy);
+        margin: 1rem 0;
+    }
+    .plan-price span {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--gray-text);
+    }
+    .plan-features {
+        list-style: none;
+        padding: 0;
+        margin: 1.5rem 0;
+        color: #4A5568;
+        flex-grow: 1;
+    }
+    .plan-features li {
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .plan-features i {
+        color: var(--teal);
+        font-size: 1.1rem;
+    }
+    .plan-button {
+        width: 100%;
+        padding-top: 14px;
+        padding-bottom: 14px;
+        font-size: 1rem;
+    }
+    .plan-button.btn-primary {
+        background: var(--teal-gradient);
+        border: none;
+    }
+    .plan-button.btn-primary:hover {
+        background: var(--teal-gradient);
+        box-shadow: var(--shadow-lg);
+        filter: brightness(1.1);
+    }
+    .btn-outline {
+        background-color: transparent;
+        color: var(--teal);
+        border: 2px solid var(--teal);
+    }
+    .btn-outline:hover {
+        background-color: var(--teal);
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    a{
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<section class="pricing-section">
+    <div class="pricing-header">
+        <h1>Simple, Transparent Pricing</h1>
+        <p>Choose the plan that's right for your scale. No hidden fees, ever.</p>
+    </div>
+
+    <div class="pricing-grid">
+        <div class="pricing-card">
+            <h3 class="plan-name">Free</h3>
+            <p class="plan-price">$0<span>/mo</span></p>
+            <ul class="plan-features">
+                <li><i class="fas fa-check-circle"></i>1 Active Stream</li>
+                <li><i class="fas fa-check-circle"></i>50 Analyses / Day</li>
+                <li><i class="fas fa-check-circle"></i>Community Support</li>
+            </ul>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-outline plan-button">Get Started</a>
+        </div>
+
+        <div class="pricing-card popular">
+            <div class="popular-badge">Most Popular</div>
+            <h3 class="plan-name">Founder</h3>
+            <p class="plan-price">$29<span>/mo</span></p>
+            <ul class="plan-features">
+                <li><i class="fas fa-check-circle"></i>5 Active Streams</li>
+                <li><i class="fas fa-check-circle"></i>1,000 Analyses / Day</li>
+                <li><i class="fas fa-check-circle"></i>Priority Email Support</li>
+            </ul>
+            <button class="btn btn-primary plan-button" data-plan="founder">Choose Plan</button>
+        </div>
+
+        <div class="pricing-card">
+            <h3 class="plan-name">Scale</h3>
+            <p class="plan-price">$99<span>/mo</span></p>
+            <ul class="plan-features">
+                <li><i class="fas fa-check-circle"></i>Unlimited Streams</li>
+                <li><i class="fas fa-check-circle"></i>10,000 Analyses / Day</li>
+                <li><i class="fas fa-check-circle"></i>Dedicated Support Channel</li>
+            </ul>
+            <button class="btn btn-outline plan-button" data-plan="scale">Choose Plan</button>
+        </div>
+    </div>
+</section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// **FIX:** All JavaScript is now in-lined in this template
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.plan-button[data-plan]').forEach(button => {
+        button.addEventListener('click', async () => {
+            const planType = button.dataset.plan;
+
+            if (!config.isAuthenticated) {
+                window.location.href = "{{ url_for('auth.login') }}?next={{ url_for('main.pricing') }}";
+                return;
+            }
+
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+            try {
+                const response = await fetch('/create-subscription', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': config.csrfToken
+                    },
+                    body: JSON.stringify({ plan_type: planType })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.subscription_id) {
+                    const options = {
+                        key: config.razorpayKeyId,
+                        subscription_id: data.subscription_id,
+                        name: "Signal Stream",
+                        description: `${planType.charAt(0).toUpperCase() + planType.slice(1)} Plan`,
+                        handler: function (response) {
+                            window.location.href = "{{ url_for('main.dashboard', success=True) }}";
+                        },
+                        prefill: {
+                            name: config.userName,
+                            email: config.userEmail
+                        },
+                        theme: {
+                            color: "var(--teal)"
+                        }
+                    };
+                    const rzp = new Razorpay(options);
+                    rzp.on('payment.failed', function (response){
+                        alert(`Payment Failed: ${response.error.description}`);
+                    });
+                    rzp.open();
+                } else {
+                    throw new Error(data.error || 'Could not initiate subscription.');
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Choose Plan';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

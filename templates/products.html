@@ -1,0 +1,375 @@
+{% extends "base.html" %}
+
+{% block title %}My Products - Signal Stream{% endblock %}
+
+{% block styles %}
+<style>
+    .products-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        padding: 1rem 0;
+    }
+
+    .sidebar-wrapper {
+        display: flex;
+        justify-content: center;
+    }
+
+    .products-content-card {
+        background-color: var(--white);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        animation: fadeInSlideUp 0.5s ease-out forwards;
+    }
+
+    .page-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--off-white);
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--navy);
+    }
+
+    /* --- MOBILE FIRST: Grid Layout --- */
+    /* This is the default layout for mobile and small screens */
+    .product-list-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .product-card {
+        background-color: var(--white);
+        border-radius: 12px;
+        border: 1px solid var(--off-white);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        box-shadow: var(--shadow-md);
+        transition: var(--transition-medium);
+    }
+
+    .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+        border-color: rgba(20, 184, 166, 0.4);
+    }
+
+    .product-card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--navy);
+    }
+    
+    .product-card-description {
+        color: #4A5568;
+        line-height: 1.6;
+        flex-grow: 1; 
+    }
+
+    .product-card-details {
+        font-size: 0.9rem;
+        color: #4A5568;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        border-top: 1px solid var(--off-white);
+        padding-top: 1rem;
+        margin-top: auto;
+    }
+    .product-card-details p {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin: 0;
+    }
+    .product-card-details i {
+        color: var(--teal);
+        margin-top: 3px;
+    }
+
+    /* --- DESKTOP OVERRIDE: Table-like Horizontal Card Layout --- */
+    @media (min-width: 992px) {
+        .product-list-container {
+            display: flex; /* Change from grid to flex for a list view */
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .product-card {
+            flex-direction: row; /* Main change: arrange card content horizontally */
+            align-items: center;
+            gap: 2rem;
+            padding: 1.5rem 2rem;
+        }
+
+        .product-card-main-info {
+            flex: 1 1 50%; /* Takes up 50% of the space */
+        }
+        
+        .product-card-title {
+            margin-bottom: 0.5rem;
+        }
+
+        .product-card-details {
+            flex: 1 1 40%; /* Takes up 40% of the space */
+            border-top: none; /* Remove top border */
+            border-left: 1px solid var(--off-white); /* Add a left border instead */
+            padding-top: 0;
+            padding-left: 2rem;
+            margin-top: 0;
+        }
+    }
+
+    .empty-state-placeholder {
+        text-align: center;
+        padding: 4rem 2rem;
+        border: 2px dashed var(--off-white);
+        border-radius: 12px;
+    }
+    .empty-state-placeholder i {
+        font-size: 3rem;
+        color: var(--gray-text);
+        margin-bottom: 1rem;
+    }
+    .empty-state-placeholder h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--navy);
+    }
+    .empty-state-placeholder button {
+        margin-top: 1.5rem;
+        background: var(--teal-dark);
+    }
+
+    /* --- Modal Styles (Unaffected by layout change) --- */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+        padding: 1rem;
+    }
+    .modal-overlay.is-visible {
+        opacity: 1;
+        visibility: visible;
+    }
+    .modal-content {
+        background-color: var(--white);
+        border-radius: 12px;
+        padding: 2rem;
+        width: 100%;
+        max-width: 500px;
+        box-shadow: var(--shadow-lg);
+        transform: scale(0.95);
+        transition: transform 0.3s ease;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    .modal-overlay.is-visible .modal-content {
+        transform: scale(1);
+    }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--navy);
+    }
+    .close-modal-btn {
+        background: none; border: none; font-size: 2rem;
+        line-height: 1; color: var(--gray-text); cursor: pointer;
+        transition: var(--transition-fast);
+    }
+    .close-modal-btn:hover {
+        color: var(--navy);
+        transform: rotate(90deg);
+    }
+    .product-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .form-group label {
+        font-weight: 600;
+        color: var(--navy);
+    }
+    .form-input {
+        width: 100%; padding: 0.85rem 1rem;
+        border: 1px solid #CBD5E1;
+        border-radius: 8px; font-family: 'Inter', sans-serif;
+        font-size: 1rem; transition: var(--transition-fast);
+        background-color: var(--off-white);
+    }
+    .form-input:focus {
+        outline: none; border-color: var(--teal);
+        background-color: var(--white);
+        box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
+    }
+    .form-actions {
+        display: flex; gap: 1rem;
+        justify-content: flex-end; margin-top: 1.5rem;
+        border-top: 1px solid var(--off-white);
+        padding-top: 1.5rem;
+    }
+    .btn-cancel {
+        background-color: var(--off-white);
+        color: #4A5568;
+        border: none;
+    }
+    .btn-cancel:hover {
+        background-color: #E2E8F0;
+        color: var(--navy);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container"> 
+<div class="products-layout">
+    <div class="sidebar-wrapper">
+        {% include "includes/sidebar.html" %}
+    </div>
+
+    <main class="products-content-card">
+        <div class="page-header">
+            <h2 class="page-title">My Products</h2>
+            <button id="add-product-btn" class="btn">
+                <i class="fas fa-plus" style="margin-right: 0.5rem;"></i>Add Product
+            </button>
+        </div>
+
+        {% if products %}
+            <div class="product-list-container">
+                {% for product in products %}
+                    <div class="product-card">
+                        <div class="product-card-main-info">
+                            <h3 class="product-card-title">{{ product.product_name }}</h3>
+                            <p class="product-card-description">{{ product.product_description }}</p>
+                        </div>
+                        <div class="product-card-details">
+                            <p><i class="fas fa-bullseye"></i><span><strong>Target:</strong> {{ product.target_audience }}</span></p>
+                            <p><i class="fas fa-lightbulb"></i><span><strong>Solves:</strong> {{ product.pain_points_solved }}</span></p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state-placeholder">
+                <i class="fas fa-box-open"></i>
+                <h3>No Products Yet</h3>
+                <p>Add a product to begin creating targeted streams and finding leads.</p>
+                <button id="add-first-product-btn" class="btn">Add Your First Product</button>
+            </div>
+        {% endif %}
+    </main>
+</div>
+
+<div id="add-product-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Add New Product</h3>
+            <button id="close-modal-btn" class="close-modal-btn" aria-label="Close modal">&times;</button>
+        </div>
+        <form method="POST" action="{{ url_for('main.products') }}" class="product-form">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                {{ form.product_name.label }}
+                {{ form.product_name(class="form-input", placeholder="e.g., SaaS for Project Managers") }}
+            </div>
+            <div class="form-group">
+                {{ form.product_description.label }}
+                {{ form.product_description(class="form-input", placeholder="A brief, compelling description of your product.", rows="3") }}
+            </div>
+            <div class="form-group">
+                {{ form.target_audience.label }}
+                {{ form.target_audience(class="form-input", placeholder="e.g., Remote teams, small businesses") }}
+            </div>
+            <div class="form-group">
+                {{ form.pain_points_solved.label }}
+                {{ form.pain_points_solved(class="form-input", placeholder="e.g., Disorganized workflows, poor communication", rows="3") }}
+            </div>
+
+            <div class="form-actions">
+                <button type="button" id="cancel-modal-btn" class="btn btn-cancel">Cancel</button>
+                <button type="submit" class="btn">Save Product</button>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('add-product-modal');
+    const addProductBtn = document.getElementById('add-product-btn');
+    const addFirstProductBtn = document.getElementById('add-first-product-btn');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const cancelModalBtn = document.getElementById('cancel-modal-btn');
+
+    const openModal = () => modal.classList.add('is-visible');
+    const closeModal = () => modal.classList.remove('is-visible');
+
+    // Event listeners to open the modal
+    if (addProductBtn) {
+        addProductBtn.addEventListener('click', openModal);
+    }
+    if (addFirstProductBtn) {
+        addFirstProductBtn.addEventListener('click', openModal);
+    }
+
+    // Event listeners to close the modal
+    if(closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeModal);
+    }
+    if(cancelModalBtn) {
+        cancelModalBtn.addEventListener('click', closeModal);
+    }
+
+    // Close modal on outside click
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.classList.contains('is-visible')) {
+            closeModal();
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+
+{% block title %}New Stream - Signal Stream{% endblock %}
+
+{% block styles %}
+<style>
+    .page-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        padding: 1rem 0;
+    }
+    .sidebar-wrapper { display: flex; justify-content: center; }
+    
+    .content-card {
+        background-color: var(--white);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        animation: fadeInSlideUp 0.5s ease-out forwards;
+    }
+
+    .page-header {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--navy);
+        margin-bottom: 1.5rem;
+    }
+
+    /* Form styling */
+    .stream-form {
+        display: flex;
+        flex-direction: column;
+        gap: 2.5rem; /* Larger gap between steps */
+    }
+    .form-step {
+        border-left: 3px solid var(--off-white);
+        padding-left: 1.5rem;
+    }
+    .form-step-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--navy);
+        margin-bottom: 1rem;
+    }
+    .form-step-title span {
+        background-color: var(--teal);
+        color: var(--white);
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    /* Platform selector cards */
+    .platform-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+    }
+    .platform-label {
+        text-align: center;
+        padding: 1.5rem 1rem;
+        border: 2px solid var(--off-white);
+        border-radius: 8px;
+        transition: var(--transition-medium);
+        cursor: pointer;
+    }
+    .platform-label i {
+        font-size: 2.5rem;
+        display: block;
+        margin-bottom: 0.75rem;
+        transition: transform 0.3s ease;
+    }
+    /* **FIX:** Platform-specific icon colors */
+    .platform-label .fa-reddit { color: #FF4500; }
+    .platform-label .fa-youtube { color: #FF0000; }
+    .platform-label .fa-product-hunt { color: #DA552F; }
+
+    .platform-label span {
+        font-weight: 600;
+        color: var(--navy);
+    }
+    .platform-label:hover {
+        border-color: var(--teal);
+        transform: translateY(-5px);
+    }
+    .platform-radio:checked + .platform-label {
+        border-color: var(--teal);
+        background-color: rgba(20, 184, 166, 0.05);
+        box-shadow: var(--shadow-md);
+    }
+    .platform-radio:checked + .platform-label i {
+        transform: scale(1.1);
+    }
+
+    /* Generic form input styling */
+    .form-group {
+        display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;
+    }
+    .form-group label {
+        font-weight: 600; color: var(--navy);
+    }
+    .form-input, .form-select {
+        width: 100%; padding: 0.85rem 1rem;
+        border: 1px solid #CBD5E1; border-radius: 8px;
+        font-family: 'Inter', sans-serif; font-size: 1rem;
+        transition: var(--transition-fast);
+        background-color: var(--off-white);
+    }
+    .form-input:focus, .form-select:focus {
+        outline: none; border-color: var(--teal);
+        background-color: var(--white);
+        box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
+    }
+
+    .form-error {
+        color: #DC2626; 
+        font-size: 0.9rem; 
+        font-weight: 500;
+        margin-top: 0.25rem;
+    }
+    .form-errors-summary {
+        padding: 1rem;
+        background-color: rgba(220, 38, 38, 0.05);
+        border: 1px solid rgba(220, 38, 38, 0.2);
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+    .form-errors-summary h4 { margin: 0 0 0.5rem 0; color: #B91C1C; }
+    .form-errors-summary ul { margin: 0; padding-left: 1.5rem; color: #B91C1C; }
+    .form-errors-summary li { margin-bottom: 0.25rem; }
+
+
+    /* AI Strictness Radio Buttons */
+    .radio-group {
+        display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .radio-group label {
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        font-weight: 500;
+    }
+
+    /* Styles for the list of existing streams */
+    .stream-list { display: flex; flex-direction: column; gap: 1rem; }
+    .stream-card {
+        display: flex; align-items: center; gap: 1.5rem;
+        padding: 1.25rem; border: 1px solid var(--off-white);
+        border-radius: 8px; transition: var(--transition-fast);
+    }
+    .stream-card:hover { border-color: #CBD5E1; }
+    .stream-card .platform-icon { font-size: 1.5rem; width: 30px; text-align: center;}
+    .stream-card .platform-icon.fa-reddit { color: #FF4500; }
+    .stream-card .platform-icon.fa-youtube { color: #FF0000; }
+    .stream-card .platform-icon.fa-product-hunt { color: #DA552F; }
+
+    .stream-card .stream-info { flex-grow: 1; }
+    .stream-card .stream-name { font-weight: 600; color: var(--navy); }
+    .stream-card .stream-target { font-size: 0.9rem; color: #4A5568; }
+    .stream-card .status-badge {
+        padding: 4px 10px; border-radius: 99px;
+        font-size: 0.8rem; font-weight: 600;
+        background-color: rgba(20, 184, 166, 0.1);
+        color: var(--teal-dark);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container"> 
+<div class="page-layout">
+    <div class="sidebar-wrapper">
+        {% include "includes/sidebar.html" %}
+    </div>
+
+    <main class="content-card">
+        <h2 class="page-header">Create a New Stream</h2>
+        <form method="POST" class="stream-form" novalidate>
+            {{ form.hidden_tag() }}
+
+            {% if form.errors %}
+                <div class="form-errors-summary">
+                    <h4>Please correct the errors below:</h4>
+                    <ul>
+                        {% for field, error_list in form.errors.items() %}
+                            {% for error in error_list %}
+                                <li>{{ form[field].label.text }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <div class="form-step">
+                <h3 class="form-step-title"><span>1</span>Select Product</h3>
+                {{ form.product_id(class="form-select") }}
+            </div>
+
+            <div class="form-step">
+                <h3 class="form-step-title"><span>2</span>Choose Platform</h3>
+                <div class="platform-selector">
+                    {% for subfield in form.platform %}
+                        {{ subfield(class="platform-radio", style="display: none;") }}
+                        <label for="{{ subfield.id }}" class="platform-label">
+                            {% if subfield.data == 'product_hunt' %}
+                                <i class="fab fa-product-hunt"></i>
+                            {% else %}
+                                <i class="fab fa-{{ subfield.data }}"></i>
+                            {% endif %}
+                            <span>{{ subfield.label.text }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-step">
+                <h3 class="form-step-title"><span>3</span>Configure Target</h3>
+                
+                <div id="reddit-target-group" class="form-group" style="display: none;">
+                    {{ form.reddit_target.label }}
+                    {{ form.reddit_target(class="form-select") }}
+                </div>
+
+                <div id="generic-target-group" class="form-group" style="display: none;">
+                    <label id="generic-target-label" for="target">Target</label>
+                    {{ form.target(class="form-input") }}
+                    {% if form.target.errors %}
+                        <div class="form-error">
+                            {% for error in form.target.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-step">
+                <h3 class="form-step-title"><span>4</span>Final Details</h3>
+                <div class="form-group">
+                    {{ form.stream_name.label }}
+                    {{ form.stream_name(class="form-input", placeholder="e.g., AI SaaS Prospects from Reddit") }}
+                    {% if form.stream_name.errors %}
+                        <div class="form-error">
+                            {% for error in form.stream_name.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.execution_frequency_minutes.label }}
+                    {{ form.execution_frequency_minutes(class="form-select") }}
+                </div>
+                <div class="form-group">
+                    {{ form.ai_strictness.label }}
+                    <div class="radio-group">
+                        {% for subfield in form.ai_strictness %}
+                            <label>{{ subfield }} {{ subfield.label.text }}</label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn">
+                    <i class="fas fa-magic" style="margin-right: 0.5rem;"></i>Create Stream
+                </button>
+            </div>
+        </form>
+    </main>
+    
+    {% if streams %}
+    <section class="content-card">
+        <h2 class="page-header">Your Current Streams</h2>
+        <div class="stream-list">
+            {% for stream in streams %}
+                <div class="stream-card">
+                    <i class="platform-icon fab fa-{{ stream.platform }}"></i>
+                    <div class="stream-info">
+                        <div class="stream-name">{{ stream.stream_name }}</div>
+                        <div class="stream-target">Target: {{ stream.target }}</div>
+                    </div>
+                    <span class="status-badge">{{ stream.status|capitalize }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const platformRadios = document.querySelectorAll('input[name="platform"]');
+    const targetGroup = {
+        reddit: document.getElementById('reddit-target-group'),
+        generic: document.getElementById('generic-target-group')
+    };
+    const targetInput = {
+        reddit: document.getElementById('reddit_target'),
+        generic: document.getElementById('target')
+    };
+    const genericTargetLabel = document.getElementById('generic-target-label');
+
+    function updateTargetField(selectedValue) {
+        targetGroup.reddit.style.display = 'none';
+        targetGroup.generic.style.display = 'none';
+        targetInput.reddit.disabled = true;
+        targetInput.generic.disabled = true;
+
+        if (selectedValue === 'reddit') {
+            targetGroup.reddit.style.display = 'block';
+            targetInput.reddit.disabled = false;
+        } else if (selectedValue === 'youtube') {
+            targetGroup.generic.style.display = 'block';
+            genericTargetLabel.textContent = 'YouTube Video Watch ID';
+            targetInput.generic.placeholder = 'e.g., dQw4w9WgXcQ';
+            targetInput.generic.disabled = false;
+        } else if (selectedValue === 'product_hunt') {
+            targetGroup.generic.style.display = 'block';
+            genericTargetLabel.textContent = 'Keywords or Topics';
+            targetInput.generic.placeholder = 'e.g., AI tools, new developer apps';
+            targetInput.generic.disabled = false;
+        }
+    }
+
+    const initiallyChecked = document.querySelector('input[name="platform"]:checked');
+    if (initiallyChecked) {
+        updateTargetField(initiallyChecked.value);
+    }
+
+    platformRadios.forEach(radio => {
+        radio.addEventListener('change', (event) => {
+            updateTargetField(event.target.value);
+        });
+    });
+});
+</script>
+{% endblock %}

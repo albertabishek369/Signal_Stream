@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Signal Stream{% endblock %}
+
+{% block styles %}
+<style>
+    .page-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        padding: 1rem 0;
+    }
+    .sidebar-wrapper {
+        display: flex;
+        justify-content: center;
+    }
+    .content-card {
+        background-color: var(--white);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        animation: fadeInSlideUp 0.5s ease-out forwards;
+    }
+    .page-header {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--navy);
+        padding-bottom: 1.5rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--off-white);
+    }
+    .settings-section {
+        margin-bottom: 2.5rem;
+    }
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--navy);
+        margin-bottom: 1rem;
+    }
+    
+    /* Card for displaying the current plan */
+    .plan-card {
+        background-color: var(--off-white);
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid #E2E8F0;
+    }
+    .plan-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .plan-details h4 {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--navy);
+        margin: 0 0 0.25rem 0;
+    }
+    .plan-details p {
+        color: #4A5568;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    .status-badge {
+        padding: 0.35rem 0.85rem;
+        border-radius: 99px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #fff;
+    }
+    .status-badge.active { background-color: var(--teal); }
+    .status-badge.canceled { background-color: var(--gray-text); }
+    .status-badge.error { background-color: #EF4444; }
+
+    .plan-card-footer {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #E2E8F0;
+    }
+
+    /* Card for the 'Upgrade' Call-to-Action */
+    .upgrade-cta-card {
+        background-color: var(--white);
+        padding: 2rem;
+        border-radius: 8px;
+        border: 2px dashed var(--off-white);
+        text-align: center;
+    }
+    .upgrade-cta-card h4 {
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: var(--navy);
+        margin: 0 0 0.5rem 0;
+    }
+    .upgrade-cta-card p {
+        color: #4A5568;
+        margin: 0 0 1.5rem 0;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="page-layout">
+    <div class="sidebar-wrapper">
+        {% include "includes/sidebar.html" %}
+    </div>
+
+    <main class="content-card">
+        <h2 class="page-header">Settings</h2>
+
+        <div class="settings-section">
+            <h3 class="section-title">Current Plan</h3>
+            
+            {% if subscription and subscription.plan_type != 'free' %}
+                <div class="plan-card">
+                    <div class="plan-card-header">
+                        <div class="plan-details">
+                            <h4>{{ subscription.plan_type|capitalize }} Plan</h4>
+                            <p>
+                                {% if subscription.status == 'active' and subscription.current_period_end %}
+                                    Renews on {{ subscription.current_period_end.strftime('%B %d, %Y') }}
+                                {% elif subscription.status == 'canceled' %}
+                                    Subscription canceled.
+                                {% else %}
+                                    Status pending.
+                                {% endif %}
+                            </p>
+                        </div>
+                        <span class="status-badge {{ subscription.status }}">{{ subscription.status|capitalize }}</span>
+                    </div>
+                    <!-- <div class="plan-card-footer">
+                        <a href="#" class="btn btn-secondary">Manage Subscription</a>
+                    </div> -->
+                </div>
+            {% else %}
+                <div class="upgrade-cta-card">
+                    <h4>You are on the Free Plan</h4>
+                    <p>Upgrade to a paid plan to unlock more streams and powerful features.</p>
+                    <a href="{{ url_for('main.pricing') }}" class="btn">
+                        <i class="fas fa-arrow-up" style="margin-right: 0.5rem;"></i>View Upgrade Options
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        </main>
+</div>
+</div>
+{% endblock %}

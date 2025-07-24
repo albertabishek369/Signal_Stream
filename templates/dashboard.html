@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Signal Stream{% endblock %}
+
+{% block styles %}
+<style>
+    .dashboard-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        padding: 1rem 0;
+    }
+    .sidebar-wrapper { display: flex; justify-content: center; }
+    .lead-feed-card {
+        background-color: var(--white);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        transition: var(--transition-medium);
+        animation: fadeInSlideUp 0.5s ease-out forwards;
+    }
+    .card-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--navy);
+        margin-bottom: 1.5rem;
+    }
+    .lead-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--off-white);
+    }
+    .filter-control {
+        flex: 1 1 200px;
+        position: relative;
+    }
+    .filter-control::after {
+        content: '\f078';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        position: absolute;
+        top: 50%;
+        right: 1rem;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: var(--gray-text);
+        transition: var(--transition-fast);
+    }
+    .filter-select {
+        width: 100%;
+        padding: 0.75rem 2.5rem 0.75rem 1rem;
+        border: 1px solid #CBD5E1;
+        border-radius: 8px;
+        background-color: var(--white);
+        font-family: 'Inter', sans-serif;
+        font-size: 1rem;
+        font-weight: 500;
+        color: #334155;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        cursor: pointer;
+        transition: var(--transition-fast);
+    }
+    .filter-select:hover { border-color: var(--teal); }
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--teal);
+        box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
+    }
+    #lead-feed {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    .no-leads-placeholder {
+        text-align: center;
+        padding: 4rem 2rem;
+        border: 2px dashed var(--off-white);
+        border-radius: 12px;
+        margin-top: 2rem;
+    }
+    .no-leads-placeholder i {
+        font-size: 3rem;
+        color: var(--gray-text);
+        margin-bottom: 1rem;
+    }
+    .no-leads-placeholder h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--navy);
+    }
+    .no-leads-placeholder p {
+        margin-top: 0.5rem;
+        color: #4A5568;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .no-leads-placeholder .btn {
+        margin-top: 1.5rem;
+        background: var(--teal-dark);
+    }
+    .loader {
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--gray-text);
+      border-bottom-color: var(--teal);
+      border-radius: 50%;
+      display: inline-block;
+      box-sizing: border-box;
+      animation: rotation 1s linear infinite;
+      margin: 2rem auto;
+    }
+    @keyframes rotation {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* --- Lead Card Styles --- */
+    .lead-card {
+        background-color: var(--white);
+        border-radius: 8px;
+        box-shadow: var(--shadow-md);
+        padding: 1.5rem;
+        border-left: 5px solid var(--teal);
+        transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+        animation: fadeIn 0.5s ease;
+    }
+    .lead-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+    .lead-card.status-viewed, .lead-card.status-archived {
+        border-left-color: #CBD5E1;
+    }
+    .lead-card.status-viewed > *:not(.lead-card-footer), 
+    .lead-card.status-archived > *:not(.lead-card-footer) {
+        opacity: 0.75;
+    }
+    .lead-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+    .lead-author { display: flex; align-items: center; gap: 1rem; }
+    .platform-icon { font-size: 1.75rem; }
+    .author-name { font-weight: 700; color: var(--navy); margin: 0; }
+    .timestamp { font-size: 0.8rem; color: var(--gray-text); margin: 0; }
+    
+    .status-badge {
+        padding: 0.25rem 0.75rem; border-radius: 99px;
+        font-size: 0.75rem; font-weight: 600; color: #fff;
+    }
+    .status-new .status-badge { background-color: var(--teal); }
+    .status-viewed .status-badge { background-color: #64748B; }
+    .status-archived .status-badge { background-color: var(--navy); }
+    .lead-content { margin: 1.25rem 0; color: #334155; line-height: 1.6; }
+    .ai-details-box { padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+    .ai-details-box.reasoning { background-color: #FEFCE8; border-left: 3px solid #FACC15; }
+    .ai-details-box.pain-point { background-color: #FEF2F2; border-left: 3px solid #F87171; }
+    .ai-title { font-size: 0.8rem; font-weight: 600; color: var(--navy); margin: 0 0 0.5rem 0; }
+    .ai-title i { margin-right: 0.5rem; }
+    .ai-text { font-size: 0.9rem; color: #475569; margin: 0; }
+    .lead-card-footer {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--off-white);
+    }
+    .view-original-link {
+        color: var(--teal); text-decoration: none; font-weight: 600;
+        transition: var(--transition-fast);
+    }
+    .view-original-link:hover { color: var(--teal-dark); }
+    .view-original-link i { font-size: 0.8em; margin-left: 0.25rem; }
+    .lead-actions { display: flex; gap: 0.75rem; }
+    .btn-action, .btn-action-secondary {
+        padding: 0.5rem 1rem; border-radius: 6px; border: none;
+        cursor: pointer; font-weight: 600; font-family: 'Inter', sans-serif;
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        transition: var(--transition-fast);
+    }
+    .btn-action { background-color: var(--teal); color: white; }
+    .btn-action:hover { background-color: var(--teal-dark); }
+    .btn-action-secondary { background-color: var(--off-white); color: #475569; }
+    .btn-action-secondary:hover { background-color: #E2E8F0; }
+    .archived-indicator {
+        padding: 0.5rem 1rem; border-radius: 6px;
+        font-weight: 600; background-color: var(--off-white);
+        color: #64748B; display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="dashboard-layout">
+    <div class="sidebar-wrapper">
+        {% include "includes/sidebar.html" %}
+    </div>
+
+    <main class="lead-feed-card">
+        <h2 class="card-title">Lead Feed</h2>
+        
+        <div class="lead-filters">
+            <div class="filter-control">
+                <select id="filter-stream" class="filter-select dashboard-filter">
+                    <option value="all">All Streams</option>
+                    {% for stream in streams %}
+                        <option value="{{ stream.stream_id }}">{{ stream.stream_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-control">
+                <select id="filter-platform" class="filter-select dashboard-filter">
+                    <option value="all">All Platforms</option>
+                    {% for p in platforms %}
+                        <option value="{{ p }}">{{ p|capitalize }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-control">
+                <select id="filter-status" class="filter-select dashboard-filter">
+                    <option value="all">All Statuses</option>
+                    <option value="new">New</option>
+                    <option value="viewed">Viewed</option>
+                    <option value="archived">Archived</option>
+                </select>
+            </div>
+        </div>
+        
+        <div id="lead-feed">
+            {% if leads %}
+                {% for lead in leads %}
+                    {% include "includes/lead_card.html" %}
+                {% endfor %}
+            {% else %}
+                <div class="no-leads-placeholder">
+                    <i class="fas fa-search"></i>
+                    <h3>No Leads Found</h3>
+                    <p>Your streams haven't found any new leads yet. Try broadening your keywords or creating a new stream to get started!</p>
+                    <a href="{{ url_for('main.new_stream') }}" class="btn">Create First Stream</a>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// **FIX:** All JavaScript is now in-lined in this template
+document.addEventListener('DOMContentLoaded', () => {
+    // Note: The global 'config' object is securely passed from base.html
+    const csrfToken = config.csrfToken;
+
+    // --- Lead Filtering Logic ---
+    const filterControls = document.querySelectorAll('.dashboard-filter');
+    filterControls.forEach(control => {
+        control.addEventListener('change', fetchFilteredLeads);
+    });
+
+    function fetchFilteredLeads() {
+        const streamId = document.getElementById('filter-stream').value;
+        const platform = document.getElementById('filter-platform').value;
+        const status = document.getElementById('filter-status').value;
+        const leadFeed = document.getElementById('lead-feed');
+
+        leadFeed.innerHTML = '<div class="loader-wrapper" style="text-align: center;"><div class="loader"></div></div>';
+        
+        const url = `/filter-leads?stream_id=${streamId}&platform=${platform}&status=${status}`;
+
+        fetch(url)
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.text();
+            })
+            .then(html => {
+                leadFeed.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error fetching leads:', error);
+                leadFeed.innerHTML = '<p style="color: #E53E3E; text-align: center; padding: 2rem;">Error: Could not load leads. Please try again.</p>';
+            });
+    }
+
+    // --- Lead Status Update Logic (via Event Delegation) ---
+    const leadFeedContainer = document.getElementById('lead-feed');
+    leadFeedContainer.addEventListener('click', async (e) => {
+        const statusButton = e.target.closest('.lead-status-button');
+        if (!statusButton) return;
+
+        const leadId = statusButton.dataset.leadId;
+        const newStatus = statusButton.dataset.status;
+        const leadCard = statusButton.closest('.lead-card');
+
+        leadCard.querySelectorAll('.lead-status-button').forEach(btn => btn.disabled = true);
+        leadCard.style.opacity = '0.5';
+
+        try {
+            const response = await fetch(`/update-lead-status/${leadId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (response.ok) {
+                leadCard.style.transition = 'all 0.4s ease';
+                leadCard.style.transform = 'translateX(50px) scale(0.95)';
+                leadCard.style.opacity = '0';
+                setTimeout(() => {
+                    leadCard.remove();
+                    if (!leadFeedContainer.querySelector('.lead-card')) {
+                        fetchFilteredLeads(); 
+                    }
+                }, 400);
+            } else {
+                throw new Error('Failed to update status on the server.');
+            }
+        } catch (error) {
+            console.error('Error updating status:', error);
+            leadCard.style.opacity = '1';
+            leadCard.querySelectorAll('.lead-status-button').forEach(btn => btn.disabled = false);
+            alert('Failed to update lead status. Please try again.');
+        }
+    });
+});
+</script>
+{% endblock %}

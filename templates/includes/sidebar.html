@@ -1,0 +1,202 @@
+<style>
+    /* --- Always Horizontal Layout --- */
+    .dashboard-sidebar {
+        
+        width: 100%;
+        overflow-x: auto; /* Enable horizontal scrolling */
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+        padding-bottom: 1rem; /* Space for the scrollbar if visible */
+    }
+
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .dashboard-sidebar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .sidebar-content {
+        background-color: var(--white);
+        border-radius: 12px;
+        box-shadow: var(--shadow-md);
+        padding: 1rem;
+        display: flex;
+        flex-direction: row; /* Lay out sections horizontally */
+        gap: 1rem;
+        width: max-content; /* Allow content to expand beyond screen width */
+    }
+
+    .sidebar-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    /* Add a vertical divider between sections */
+    .sidebar-section:not(:last-child) {
+        padding-right: 1rem;
+        border-right: 1px solid var(--off-white);
+    }
+
+    .sidebar-section-header {
+        display: flex;
+        align-items: center;
+    }
+
+    /* Section titles are hidden for the compact horizontal look */
+    .sidebar-section-title {
+        display: none;
+    }
+
+    .add-link {
+        color: var(--gray-text);
+        font-size: 1.5rem; /* Make icon larger for easier tapping */
+        padding: 0.5rem;
+        transition: var(--transition-fast);
+        border-radius: 50%;
+    }
+
+    .add-link:hover {
+        color: var(--teal);
+        background-color: var(--off-white);
+        transform: scale(1.1);
+    }
+
+    .sidebar-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: row; /* Lay out links horizontally */
+        gap: 0.5rem;
+    }
+
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        color: #334155;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: var(--transition-fast);
+        white-space: nowrap; /* Prevent text from wrapping */
+    }
+
+    .sidebar-link:hover {
+        background-color: var(--off-white);
+        color: var(--navy);
+    }
+    
+    .sidebar-link i.link-icon {
+        width: 1.25rem;
+        text-align: center;
+        font-size: 1.1rem;
+        color: var(--gray-text);
+        transition: var(--transition-fast);
+    }
+    
+    .sidebar-link:hover i.link-icon {
+        color: var(--teal);
+    }
+
+    .sidebar-link.active {
+        background-color: var(--teal);
+        color: var(--white);
+        box-shadow: 0 4px 10px -2px rgba(20, 184, 166, 0.4);
+    }
+    
+    .sidebar-link.active i.link-icon {
+        color: var(--white);
+    }
+    
+    .add-item-cta {
+        background-color: rgba(20, 184, 166, 0.08);
+        color: var(--teal-dark);
+    }
+
+    .add-item-cta:hover {
+        background-color: rgba(20, 184, 166, 0.15);
+    }
+
+    /* The <hr> dividers are not needed in a horizontal layout */
+    .sidebar-divider {
+        display: none;
+    }
+
+    /* Platform-specific icon colors */
+    .icon-platform-reddit { color: #FF4500 !important; }
+    .icon-platform-youtube { color: #FF0000 !important; }
+    .icon-platform-product-hunt { color: #DA552F !important; }
+</style>
+
+<aside class="dashboard-sidebar">
+    <div class="sidebar-content">
+        <div class="sidebar-section">
+            <div class="sidebar-section-header">
+                <h3 class="sidebar-section-title">Products</h3>
+                <a href="{{ url_for('main.products') }}" class="add-link" aria-label="Add new product">
+                    <i class="fas fa-plus-circle"></i>
+                </a>
+            </div>
+            <ul class="sidebar-list">
+                {% for product in products %}
+                    <li>
+                        <a href="#" class="sidebar-link">
+                            <i class="fas fa-box-open link-icon"></i>
+                            <span class="link-text">{{ product.product_name }}</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li>
+                        <a href="{{ url_for('main.products') }}" class="sidebar-link add-item-cta">
+                            <i class="fas fa-plus link-icon"></i>
+                            <span class="link-text">Add Product</span>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-header">
+                <h3 class="sidebar-section-title">Streams</h3>
+                <a href="{{ url_for('main.new_stream') }}" class="add-link" aria-label="Create new stream">
+                    <i class="fas fa-plus-circle"></i>
+                </a>
+            </div>
+            <ul class="sidebar-list">
+                {% for stream in streams %}
+                    <li>
+                        <a href="#" class="sidebar-link">
+                            {% set platform_icon = 'fa-product-hunt icon-platform-product-hunt' %}
+                            {% if stream.platform == "reddit" %}
+                                {% set platform_icon = 'fa-reddit-alien icon-platform-reddit' %}
+                            {% elif stream.platform == "youtube" %}
+                                {% set platform_icon = 'fa-youtube icon-platform-youtube' %}
+                            {% endif %}
+                            <i class="fab {{ platform_icon }} link-icon"></i>
+                            <span class="link-text">{{ stream.stream_name }}</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li>
+                        <a href="{{ url_for('main.new_stream') }}" class="sidebar-link add-item-cta">
+                            <i class="fas fa-plus link-icon"></i>
+                            <span class="link-text">New Stream</span>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="sidebar-section">
+            <ul class="sidebar-list">
+                <li><a href="{{ url_for('main.dashboard') }}" class="sidebar-link {{ 'active' if request.endpoint == 'main.dashboard' }}"><i class="fas fa-tachometer-alt link-icon"></i><span class="link-text">Dashboard</span></a></li>
+                <li><a href="{{ url_for('main.products') }}" class="sidebar-link {{ 'active' if request.endpoint == 'main.products' }}"><i class="fas fa-boxes link-icon"></i><span class="link-text">Products</span></a></li>
+                <li><a href="{{ url_for('main.settings') }}" class="sidebar-link {{ 'active' if request.endpoint == 'main.settings' }}"><i class="fas fa-cog link-icon"></i><span class="link-text">Settings</span></a></li>
+            </ul>
+        </div>
+    </div>
+</aside>

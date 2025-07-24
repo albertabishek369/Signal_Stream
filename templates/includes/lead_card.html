@@ -1,0 +1,67 @@
+<div class="lead-card status-{{ lead.status or 'new' }}">
+    <div class="lead-card-header">
+        <div class="lead-author">
+            {% set platform_icon_class = 'fa-question-circle' %}
+            {% set platform_color = '#A0AEC0' %}
+            {% if lead.source_platform == "reddit" %}
+                {% set platform_icon_class = 'fa-reddit-alien' %}
+                {% set platform_color = '#FF4500' %}
+            {% elif lead.source_platform == "youtube" %}
+                {% set platform_icon_class = 'fa-youtube' %}
+                {% set platform_color = '#FF0000' %}
+            {% elif lead.source_platform == "product_hunt" %}
+                {% set platform_icon_class = 'fa-product-hunt' %}
+                {% set platform_color = '#DA552F' %}
+            {% endif %}
+            <i class="fab {{ platform_icon_class }} platform-icon" style="color: {{ platform_color }};"></i>
+            <div>
+                <h4 class="author-name">{{ lead.author_username or 'Unknown Author' }}</h4>
+                <p class="timestamp">{{ lead.created_at.strftime('%b %d, %Y') if lead.created_at else 'Unknown time' }}</p>
+            </div>
+        </div>
+        <span class="status-badge">{{ (lead.status or 'new')|capitalize }}</span>
+    </div>
+
+    <p class="lead-content">{{ lead.content_text|truncate(300) }}</p>
+
+    <div class="ai-details-box reasoning">
+        <p class="ai-title"><i class="fas fa-lightbulb"></i>AI Reasoning</p>
+        <p class="ai-text">{{ lead.ai_reasoning or 'No reasoning provided.' }}</p>
+    </div>
+    
+    <div class="ai-details-box pain-point">
+        <p class="ai-title"><i class="fas fa-heart-broken"></i>Pain Point</p>
+        <p class="ai-text">{{ lead.ai_pain_point or 'Not identified.' }}</p>
+    </div>
+
+    <div class="lead-card-footer">
+        <a href="{{ lead.content_url }}" target="_blank" rel="noopener noreferrer" class="view-original-link">
+            View Original <i class="fas fa-external-link-alt"></i>
+        </a>
+        
+        <div class="lead-actions">
+            {% if lead.status == 'viewed' %}
+                <button class="btn-action lead-status-button" data-lead-id="{{ lead.lead_id }}" data-status="new">
+                    <i class="fas fa-eye-slash"></i> Mark as New
+                </button>
+                <button class="btn-action-secondary lead-status-button" data-lead-id="{{ lead.lead_id }}" data-status="archived">
+                    <i class="fas fa-archive"></i> Archive
+                </button>
+            {% elif lead.status == 'archived' %}
+                 <button class="btn-action lead-status-button" data-lead-id="{{ lead.lead_id }}" data-status="new">
+                    <i class="fas fa-box-open"></i> Unarchive
+                </button>
+                <span class="archived-indicator"><i class="fas fa-archive"></i> Archived</span>
+            {% else %}
+                {# **FIX:** This block now acts as the default for 'new' leads #}
+                {# OR any lead with an unknown/missing status #}
+                <button class="btn-action lead-status-button" data-lead-id="{{ lead.lead_id }}" data-status="viewed">
+                    <i class="fas fa-check"></i> Mark Viewed
+                </button>
+                <button class="btn-action-secondary lead-status-button" data-lead-id="{{ lead.lead_id }}" data-status="archived">
+                    <i class="fas fa-archive"></i> Archive
+                </button>
+            {% endif %}
+        </div>
+    </div>
+</div>

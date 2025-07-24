@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <title>{% block title %}Signal Stream - Your Data, Simplified{% endblock %}</title>
+    <meta name="description" content="Signal Stream offers seamless data processing and real-time analytics. Turn your data streams into actionable insights with our powerful and intuitive platform.">
+    <meta name="keywords" content="data streaming, real-time analytics, data processing, signal processing, big data, live data">
+    <meta name="author" content="Signal Stream">
+    <link rel="canonical" href="{{ request.url }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:title" content="Signal Stream - Your Data, Simplified">
+    <meta property="og:description" content="Turn your data streams into actionable insights with our powerful and intuitive platform.">
+    <meta property="og:image" content="{{ url_for('static', filename='images/signal-stream-preview.png') }}">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ request.url }}">
+    <meta property="twitter:title" content="Signal Stream - Your Data, Simplified">
+    <meta property="twitter:description" content="Turn your data streams into actionable insights with our powerful and intuitive platform.">
+    <meta property="twitter:image" content="{{ url_for('static', filename='images/signal-stream-preview.png') }}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* --- Base Styles & Variables --- */
+        :root {
+            --navy: #0F172A; /* Darker, richer navy */
+            --navy-light: #1E293B;
+            --teal: #14B8A6; /* Vibrant teal */
+            --teal-dark: #0D9488;
+            --off-white: #F1F5F9;
+            --white: #FFFFFF;
+            --gray-text: #94A3B8;
+            --light-text: #E2E8F0;
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --transition-fast: all 0.2s ease-in-out;
+            --transition-medium: all 0.3s ease-in-out;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background-color: var(--off-white);
+            color: #334155;
+            line-height: 1.6;
+            padding-top: 80px; /* Space for fixed header */
+            overflow-x: hidden;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        main {
+            min-height: calc(100vh - 80px - 280px); /* Adjust based on footer height */
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* --- Enhanced Header & Navigation --- */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            z-index: 1000;
+            background: var(--navy-light);
+            transition: var(--transition-medium);
+        }
+        header .container {
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header.scrolled {
+            background: rgba(15, 23, 42, 0.85); /* Glassmorphic background */
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-md);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        nav {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+            height: 100%;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--white);
+            transition: transform 0.3s ease;
+        }
+        .logo-link:hover {
+            transform: scale(1.02);
+        }
+        .logo-link i {
+            color: var(--teal);
+            font-size: 28px;
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        .logo-link:hover i {
+            transform: rotate(15deg);
+        }
+        .logo-link span {
+            font-weight: 800;
+            font-size: 22px;
+            letter-spacing: -0.5px;
+        }
+
+        /* Desktop Navigation Links - Enhanced */
+        .desktop-nav {
+            display: none; /* Hidden by default */
+        }
+        @media (min-width: 768px) {
+            .desktop-nav {
+                display: flex;
+                align-items: center;
+                gap: 32px;
+            }
+        }
+        .desktop-nav .nav-links {
+            display: flex;
+            gap: 24px;
+        }
+        .desktop-nav a {
+            color: var(--light-text);
+            text-decoration: none;
+            font-weight: 600;
+            position: relative;
+            padding: 8px 4px;
+            transition: var(--transition-fast);
+        }
+        .desktop-nav a:not(.btn)::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg, var(--teal), var(--teal-dark));
+            transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .desktop-nav a:not(.btn):hover::after, .desktop-nav a:not(.btn).active::after {
+            width: 100%;
+        }
+        .desktop-nav a:not(.btn):hover, .desktop-nav a:not(.btn).active {
+            color: var(--white);
+        }
+        .desktop-nav .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-left: 24px;
+        }
+        .desktop-nav a.login-link {
+            color: var(--light-text);
+            font-weight: 600;
+        }
+        .desktop-nav a.login-link:hover {
+            color: var(--white);
+        }
+
+        /* --- Buttons --- */
+        .btn {
+            display: inline-block;
+            padding: 10px 22px;
+            background: var(--teal);
+            color: var(--white);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition-medium);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid transparent;
+        }
+        .btn:hover {
+            background-color: var(--teal-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .btn-secondary {
+            background-color: var(--navy-light);
+            color: var(--light-text);
+            border: 1px solid #334155;
+        }
+        .btn-secondary:hover {
+            background-color: #334155;
+            color: var(--white);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-button {
+            display: block;
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+        @media (min-width: 768px) {
+            .mobile-menu-button { display: none; }
+        }
+        .mobile-nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.98);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            z-index: 999;
+        }
+        .mobile-nav-overlay a {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 24px;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInSlideUp 0.5s ease forwards;
+        }
+        /* Staggered animation */
+        .mobile-nav-overlay a:nth-child(1) { animation-delay: 0.2s; }
+        .mobile-nav-overlay a:nth-child(2) { animation-delay: 0.3s; }
+        .mobile-nav-overlay a:nth-child(3) { animation-delay: 0.4s; }
+        .mobile-nav-overlay a:nth-child(4) { animation-delay: 0.5s; }
+        .mobile-nav-overlay a:nth-child(5) { animation-delay: 0.6s; }
+
+        @keyframes fadeInSlideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Flash Messages */
+        .flash-message {
+            position: fixed;
+            top: 90px;
+            right: 24px;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            animation: slideIn 0.5s ease-out, fadeOut 0.5s ease-out 4.5s forwards;
+            color: var(--white);
+            z-index: 2000;
+        }
+        .flash-success { background: linear-gradient(90deg, #10B981, #059669); }
+        .flash-danger { background: linear-gradient(90deg, #EF4444, #DC2626); }
+        .flash-info { background: linear-gradient(90deg, #3B82F6, #2563EB); }
+
+        @keyframes slideIn {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; display: none; }
+        }
+
+        /* --- Footer --- */
+        footer {
+            background-color: var(--navy);
+            color: var(--gray-text);
+            padding: 4rem 0 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            text-align: left;
+        }
+        .footer-column .logo-link {
+            margin-bottom: 1rem;
+        }
+        .footer-column h3 {
+            color: var(--white);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+        .footer-links a {
+            color: var(--gray-text);
+            text-decoration: none;
+            transition: var(--transition-fast);
+        }
+        .footer-links a:hover {
+            color: var(--teal);
+        }
+        .social-links {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .social-links a {
+            color: var(--gray-text);
+            font-size: 1.25rem;
+            transition: var(--transition-fast);
+        }
+        .social-links a:hover {
+            color: var(--teal);
+            transform: scale(1.1);
+        }
+        .footer-bottom {
+            margin-top: 3rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        /* --- Testimonial Stars --- */
+        .testimonial-stars {
+            color: #F59E0B;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+    {% block styles %}{% endblock %}
+</head>
+
+<body x-data="{ mobileMenuOpen: false }" :class="{ 'overflow-hidden': mobileMenuOpen }">
+    <header x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 20)" :class="{ 'scrolled': scrolled }">
+        <div class="container">
+            <nav>
+                <a href="{{ url_for('main.home') }}" class="logo-link">
+                    <i class="fas fa-satellite-dish"></i>
+                    <span>Signal Stream</span>
+                </a>
+
+                <div class="desktop-nav">
+                    <div class="nav-links">
+                        <a href="/#features">Features</a>
+                        <a href="{{ url_for('main.pricing') }}">Pricing</a>
+                        {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+                        {% endif %}
+                    </div>
+                    <div class="nav-actions">
+                        {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary">Logout</a>
+                        {% else %}
+                            <a href="{{ url_for('auth.login') }}" class="login-link">Login</a>
+                            <a href="{{ url_for('auth.register') }}" class="btn">Get Started</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <button class="mobile-menu-button" @click="mobileMenuOpen = !mobileMenuOpen" aria-label="Toggle Menu">
+                    <i :class="mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars'"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div x-show="mobileMenuOpen"
+         class="mobile-nav-overlay"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click.away="mobileMenuOpen = false"
+         x-cloak>
+        <a href="/#features" @click="mobileMenuOpen = false">Features</a>
+        <a href="{{ url_for('main.pricing') }}" @click="mobileMenuOpen = false">Pricing</a>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('main.dashboard') }}" @click="mobileMenuOpen = false">Dashboard</a>
+            <a href="{{ url_for('auth.logout') }}" @click="mobileMenuOpen = false">Logout</a>
+        {% else %}
+            <a href="{{ url_for('auth.login') }}" @click="mobileMenuOpen = false">Login</a>
+            <a href="{{ url_for('auth.register') }}" class="btn" @click="mobileMenuOpen = false">Get Started</a>
+        {% endif %}
+    </div>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-triangle{% else %}info-circle{% endif %}" style="margin-right: 12px; font-size: 1.2rem;"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-column">
+                <a href="{{ url_for('main.home') }}" class="logo-link">
+                     <i class="fas fa-satellite-dish"></i>
+                     <span>Signal Stream</span>
+                </a>
+                <p>Turning data streams into actionable insights.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                    <a href="mailto:launchquest@gmail.com">LaunchQuest@gmail.com</a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h3>Product</h3>
+                <ul class="footer-links">
+                    <li><a href="/#features">Features</a></li>
+                    <li><a href="{{ url_for('main.pricing') }}">Pricing</a></li>
+                    <li><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                    <li><a href="#">Documentation</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Company</h3>
+                <ul class="footer-links">
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Legal</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 Signal Stream. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    
+    <script>
+        // Pass Flask config/user data to JavaScript in a secure way
+        const config = {
+            razorpayKeyId: "{{ config.RAZORPAY_KEY_ID }}",
+            csrfToken: "{{ csrf_token() }}",
+            isAuthenticated: "{{ current_user.is_authenticated|tojson }}",
+            userName: "{{ current_user.username if current_user.is_authenticated else '' }}",
+            userEmail: "{{ current_user.email if current_user.is_authenticated else '' }}"
+        };
+
+        // Active link highlighter
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.desktop-nav a').forEach(link => {
+                // More robust matching for active link
+                if (link.getAttribute('href') === currentPath || (currentPath === '/' && link.getAttribute('href') === '/#features')) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

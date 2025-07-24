@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Signal Stream{% endblock %}
+
+{% block styles %}
+<style>
+    /* Hides the main header/footer for a focused auth experience */
+    body > header, body > footer { display: none; }
+    body { padding-top: 0; }
+    main { min-height: 100vh; }
+
+    .auth-layout {
+        min-height: 100vh;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--off-white);
+        padding: 2rem;
+    }
+
+    .auth-card {
+        background-color: var(--white);
+        border-radius: 12px;
+        box-shadow: var(--shadow-lg);
+        padding: 2.5rem;
+        width: 100%;
+        max-width: 420px;
+        animation: fadeInSlideUp 0.6s ease-out;
+    }
+
+    .auth-header { text-align: center; margin-bottom: 2rem; }
+    .auth-title { font-size: 2rem; font-weight: 800; color: var(--navy); margin: 0 0 0.5rem 0; }
+    .auth-subtitle { color: #4A5568; margin: 0; }
+    
+    .social-login-btn {
+        display: flex; align-items: center; justify-content: center;
+        gap: 0.75rem; padding: 0.75rem;
+        background-color: var(--white);
+        border: 1px solid #CBD5E1; border-radius: 8px;
+        color: #334155; font-weight: 600; text-decoration: none;
+        margin-bottom: 1.5rem; transition: var(--transition-fast);
+    }
+    .social-login-btn:hover { border-color: #94A3B8; box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .social-login-btn img { width: 22px; }
+
+    .divider {
+        display: flex; align-items: center; gap: 1rem;
+        margin: 1.5rem 0; color: var(--gray-text); font-size: 0.8rem;
+    }
+    .divider hr { flex-grow: 1; border: none; border-top: 1px solid var(--off-white); }
+    
+    .auth-form { display: flex; flex-direction: column; gap: 1.25rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .form-group label { font-weight: 600; color: var(--navy); }
+    .form-input {
+        width: 100%; padding: 0.85rem 1rem;
+        border: 1px solid #CBD5E1; border-radius: 8px;
+        font-family: 'Inter', sans-serif; font-size: 1rem;
+        transition: var(--transition-fast);
+    }
+    .form-input:focus {
+        outline: none; border-color: var(--teal);
+        box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
+    }
+    
+    .form-error { color: #DC2626; font-size: 0.9rem; font-weight: 500; }
+    
+    .form-footer-link {
+        text-align: right; margin-top: -0.5rem;
+        font-size: 0.9rem;
+    }
+    .form-footer-link a { color: var(--teal); text-decoration: none; font-weight: 600; }
+    .form-footer-link a:hover { text-decoration: underline; }
+    
+    .auth-card .btn { width: 100%; padding: 0.85rem; font-size: 1rem; }
+    .auth-redirect-link { text-align: center; font-size: 0.9rem; color: #4A5568; }
+    .auth-redirect-link a { color: var(--teal); text-decoration: none; font-weight: 600; }
+    .auth-redirect-link a:hover { text-decoration: underline; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container"> 
+<div class="auth-layout">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h2 class="auth-title">Welcome Back</h2>
+            <p class="auth-subtitle">Sign in to your account</p>
+        </div>
+        
+        <a href="{{ url_for('oauth.login_google') }}" class="social-login-btn">
+            <img src="{{ url_for('static', filename='images/google_logo.png') }}" alt="Google">
+            Sign in with Google
+        </a>
+        
+        <div class="divider">
+            <hr><span>OR</span><hr>
+        </div>
+        
+        <form method="POST" class="auth-form" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                {{ form.email.label }}
+                {{ form.email(class="form-input", placeholder="you@example.com") }}
+                {% for error in form.email.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.password.label }}
+                {{ form.password(class="form-input", placeholder="••••••••") }}
+                {% for error in form.password.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            
+            <!-- <div class="form-footer-link">
+                <a href="#">Forgot Password?</a>
+            </div> -->
+            
+            <button type="submit" class="btn">Sign In</button>
+            
+            <p class="auth-redirect-link">
+                Don't have an account? <a href="{{ url_for('auth.register') }}">Sign Up</a>
+            </p>
+        </form>
+    </div>
+</div>
+</div>
+{% endblock %}

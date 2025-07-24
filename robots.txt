@@ -1,0 +1,13 @@
+# signalstream/robots.txt
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /products
+Disallow: /streams/new
+Disallow: /settings
+Disallow: /pricing
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+
+Sitemap: https://yourdomain.com/sitemap.xml
