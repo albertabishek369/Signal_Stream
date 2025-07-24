@@ -1,3 +1,2 @@
- 
 [start]
-cmd = "gunicorn --timeout 120 app:app"
+cmd = "gunicorn 'app:create_app()'"
