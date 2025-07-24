@@ -169,7 +169,7 @@ def settings():
 def create_subscription():
     user_id = current_user.id
     plan_type = request.get_json().get('plan_type')
-    plan_ids = {'founder': 'plan_QwswYisjnDCDY6', 'scale': 'plan_Qwt1O8dXzFcNNF'}
+    plan_ids = {'founder': 'plan_Pt9lnya6jJDPgN', 'scale': 'plan_Qwt1O8dXzFcNNF'}
     
     if plan_type not in plan_ids:
         return jsonify({'error': 'Invalid plan type'}), 400
