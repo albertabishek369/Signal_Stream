@@ -22,6 +22,7 @@ Flask-SQLAlchemy==3.1.1
 Flask-WTF==1.2.2
 gotrue==2.12.3
 greenlet==3.2.3
+gunicorn==23.0.0
 h11==0.16.0
 h2==4.2.0
 hpack==4.1.0
