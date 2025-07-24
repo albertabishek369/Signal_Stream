@@ -199,32 +199,35 @@ def create_subscription():
     if plan_type not in plan_ids:
         return jsonify({'error': 'Invalid plan type'}), 400
 
-    current_sub = Subscription.query.filter_by(user_id=user_id).first()
-    if current_sub and current_sub.status == 'active' and current_sub.plan_type != 'free':
+    # **FIX 1: Check the user's active plan on the Profile model, not the Subscription model**
+    if current_user.plan != 'free':
         flash('You already have an active subscription. Please manage it from your settings.', 'info')
         return jsonify({'error': 'Active subscription already exists'}), 400
 
     try:
+        # **FIX 2: Create or retrieve a Razorpay Customer first**
+        if not current_user.razorpay_customer_id:
+            customer_payload = {
+                "name": current_user.username,
+                "email": current_user.email,
+                "contact": current_user.phone,
+                "notes": {"user_id": str(user_id)}
+            }
+            customer = razorpay_client.customer.create(customer_payload)
+            current_user.razorpay_customer_id = customer['id']
+            db.session.commit()
+        
         subscription_payload = {
             'plan_id': plan_ids[plan_type],
+            'customer_id': current_user.razorpay_customer_id,
             'customer_notify': 1,
             'total_count': 12,
-            'notes': {'user_id': str(user_id)}
+            'notes': {'user_id': str(user_id), 'plan_type': plan_type}
         }
         rzp_subscription = razorpay_client.subscription.create(subscription_payload)
         
-        if current_sub and current_sub.plan_type == 'free':
-            db.session.delete(current_sub)
-            db.session.commit()
-
-        new_sub = Subscription(
-            user_id=user_id,
-            plan_type=plan_type,
-            status='created', # Set status to 'created' initially
-            razorpay_subscription_id=rzp_subscription['id']
-        )
-        db.session.add(new_sub)
-        db.session.commit()
+        # **FIX 3: DO NOT create a Subscription record here.**
+        # We only return the details needed for checkout.
         
         return jsonify({
             'subscription_id': rzp_subscription['id'],
@@ -253,29 +256,57 @@ def razorpay_webhook():
     event = request.get_json()
     event_type = event.get('event')
     
-    if event_type == 'subscription.activated' or event_type == 'subscription.charged':
+    if event_type == 'subscription.activated':
         subscription_data = event['payload']['subscription']['entity']
-        razorpay_sub_id = subscription_data['id']
+        rzp_sub_id = subscription_data['id']
+        user_id = subscription_data['notes']['user_id']
+        plan_type = subscription_data['notes']['plan_type']
         
-        sub_to_update = Subscription.query.filter_by(razorpay_subscription_id=razorpay_sub_id).first()
+        user = db.session.get(Profile, user_id)
+        if not user:
+            current_app.logger.error(f"Webhook received for unknown user ID: {user_id}")
+            return jsonify({'status': 'error'}), 404
 
-        if not sub_to_update:
-            current_app.logger.error(f"Webhook received for unknown subscription ID: {razorpay_sub_id}")
-            return jsonify({'status': 'error', 'message': 'Subscription not found in our database'}), 404
+        # **FIX 4: This is the ONLY place a subscription record is created.**
+        # Check if a subscription with this ID already exists to prevent duplicates.
+        existing_sub = Subscription.query.filter_by(razorpay_subscription_id=rzp_sub_id).first()
+        if existing_sub:
+            current_app.logger.warning(f"Webhook for already existing subscription ID {rzp_sub_id} received. Ignoring.")
+            return jsonify({'status': 'success'})
+
+        # Delete the old 'free' subscription if it exists
+        Subscription.query.filter_by(user_id=user_id, plan_type='free').delete()
         
-        user = sub_to_update.profile
+        new_sub = Subscription(
+            user_id=user_id,
+            plan_type=plan_type,
+            status='active',
+            razorpay_subscription_id=rzp_sub_id,
+            current_period_end=datetime.fromtimestamp(subscription_data['current_end'], tz=timezone.utc)
+        )
+        # Also update the user's main plan status
+        user.plan = plan_type
         
-        sub_to_update.status = 'active'
-        sub_to_update.current_period_end = datetime.fromtimestamp(subscription_data['current_end'], tz=timezone.utc)
+        db.session.add(new_sub)
         db.session.commit()
+        
+        send_subscription_confirmation_email(user, new_sub)
+        current_app.logger.info(f"Subscription {new_sub.id} for user {user.id} was CREATED and ACTIVATED.")
 
-        if event_type == 'subscription.activated':
-            send_subscription_confirmation_email(user, sub_to_update)
-
-        current_app.logger.info(f"Subscription {sub_to_update.id} for user {user.id} was updated to '{sub_to_update.status}'")
+    elif event_type == 'subscription.charged':
+        # This handles recurring payments
+        subscription_data = event['payload']['subscription']['entity']
+        rzp_sub_id = subscription_data['id']
+        
+        sub_to_update = Subscription.query.filter_by(razorpay_subscription_id=rzp_sub_id).first()
+        if sub_to_update:
+            sub_to_update.status = 'active'
+            sub_to_update.current_period_end = datetime.fromtimestamp(subscription_data['current_end'], tz=timezone.utc)
+            sub_to_update.profile.plan = sub_to_update.plan_type
+            db.session.commit()
+            current_app.logger.info(f"Subscription {sub_to_update.id} for user {sub_to_update.user_id} was successfully renewed.")
 
     return jsonify({'status': 'success'})
-
 
 @main_bp.route('/terms') 
 @login_required
