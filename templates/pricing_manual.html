@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% block title %}Pricing - Signal Stream{% endblock %}
+{% block styles %}
+    <style>
+            :root {
+        --teal-gradient: linear-gradient(135deg, var(--teal), #2DD4BF);
+    }
+    .pricing-section {
+        padding: 5rem 0;
+        animation: fadeIn 0.8s ease-in-out;
+    }
+    .pricing-header {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+    .pricing-header h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--navy);
+        letter-spacing: -1px;
+        margin-bottom: 1rem;
+    }
+    .pricing-header p {
+        font-size: 1.25rem;
+        color: var(--gray-text);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .pricing-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    @media (min-width: 768px) {
+        .pricing-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+    .pricing-card {
+        background-color: var(--white);
+        border-radius: 12px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-md);
+        transition: var(--transition-medium);
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #E2E8F0;
+        animation: slideUp 0.6s ease-out forwards;
+        opacity: 0;
+    }
+    .pricing-card:nth-child(2) { animation-delay: 0.1s; }
+    .pricing-card:nth-child(3) { animation-delay: 0.2s; }
+    .pricing-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--shadow-lg);
+    }
+    .pricing-card.popular {
+        position: relative;
+        border: 2px solid var(--teal);
+        transform: scale(1.05);
+    }
+    @media (max-width: 767px) {
+        .pricing-card.popular {
+             transform: scale(1);
+        }
+    }
+    .popular-badge {
+        position: absolute;
+        top: -18px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--teal-gradient);
+        color: var(--white);
+        padding: 6px 16px;
+        border-radius: 99px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        box-shadow: 0 2px 5px rgba(20, 184, 166, 0.4);
+    }
+    .plan-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--navy);
+    }
+    .plan-price {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--navy);
+        margin: 1rem 0;
+    }
+    .plan-price span {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--gray-text);
+    }
+    .plan-features {
+        list-style: none;
+        padding: 0;
+        margin: 1.5rem 0;
+        color: #4A5568;
+        flex-grow: 1;
+    }
+    .plan-features li {
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .plan-features i {
+        color: var(--teal);
+        font-size: 1.1rem;
+    }
+    .plan-button {
+        width: 100%;
+        padding-top: 14px;
+        padding-bottom: 14px;
+        font-size: 1rem;
+    }
+    .plan-button.btn-primary {
+        background: var(--teal-gradient);
+        border: none;
+    }
+    .plan-button.btn-primary:hover {
+        background: var(--teal-gradient);
+        box-shadow: var(--shadow-lg);
+        filter: brightness(1.1);
+    }
+    .btn-outline {
+        background-color: transparent;
+        color: var(--teal);
+        border: 2px solid var(--teal);
+    }
+    .btn-outline:hover {
+        background-color: var(--teal);
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    a{
+        text-align: center;
+    }
+        /* ... paste all styles from pricing.html here ... */
+        /* Add Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 2000; opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease; padding: 1rem;
+        }
+        .modal-overlay.is-visible { opacity: 1; visibility: visible; }
+        .modal-content {
+            background-color: var(--white); border-radius: 12px; padding: 2rem;
+            width: 100%; max-width: 500px; box-shadow: var(--shadow-lg);
+            transform: scale(0.95); transition: transform 0.3s ease;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .modal-overlay.is-visible .modal-content { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-title { font-size: 1.5rem; font-weight: 700; color: var(--navy); }
+        .close-modal-btn { background: none; border: none; font-size: 2rem; line-height: 1; color: var(--gray-text); cursor: pointer; transition: var(--transition-fast); }
+        .close-modal-btn:hover { color: var(--navy); transform: rotate(90deg); }
+        .manual-form { display: flex; flex-direction: column; gap: 1rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        .form-group label { font-weight: 600; color: var(--navy); }
+        .form-input, .form-textarea {
+            width: 100%; padding: 0.85rem 1rem; border: 1px solid #CBD5E1; border-radius: 8px;
+            font-family: 'Inter', sans-serif; font-size: 1rem; transition: var(--transition-fast);
+        }
+        .form-actions { display: flex; justify-content: flex-end; margin-top: 1.5rem; }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="pricing-card popular">
+        <button class="btn btn-primary plan-button" data-plan="founder">Choose Plan</button>
+    </div>
+    <div class="pricing-card">
+        <button class="btn btn-outline plan-button" data-plan="scale">Choose Plan</button>
+    </div>
+
+    <div id="manual-sub-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title" class="modal-title">Request Founder Plan</h3>
+                <button id="close-modal-btn" class="close-modal-btn" aria-label="Close modal">&times;</button>
+            </div>
+            <p>Please confirm your details below. We will email you within 24 hours to complete the payment and activation process.</p>
+            <form method="POST" action="{{ url_for('main.request_subscription') }}" class="manual-form">
+                {{ form.hidden_tag() }}
+                {{ form.plan_type(id="modal-plan-type", type="hidden") }}
+                <div class="form-group">
+                    {{ form.username.label }}
+                    {{ form.username(class="form-input") }}
+                </div>
+                <div class="form-group">
+                    {{ form.email.label }}
+                    {{ form.email(class="form-input") }}
+                </div>
+                <div class="form-group">
+                    {{ form.phone.label }}
+                    {{ form.phone(class="form-input") }}
+                </div>
+                <div class="form-group">
+                    {{ form.reason.label }}
+                    {{ form.reason(class="form-textarea", rows="3") }}
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('manual-sub-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalPlanTypeInput = document.getElementById('modal-plan-type');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+
+    const openModal = (planType) => {
+        modalTitle.textContent = `Request ${planType.charAt(0).toUpperCase() + planType.slice(1)} Plan`;
+        modalPlanTypeInput.value = planType;
+        modal.classList.add('is-visible');
+    };
+    const closeModal = () => modal.classList.remove('is-visible');
+
+    document.querySelectorAll('.plan-button[data-plan]').forEach(button => {
+        button.addEventListener('click', () => {
+            openModal(button.dataset.plan);
+        });
+    });
+
+    closeModalBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) closeModal();
+    });
+});
+</script>
+{% endblock %}

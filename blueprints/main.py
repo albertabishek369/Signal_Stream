@@ -1,8 +1,8 @@
 import uuid
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash, current_app
 # **FIX:** Import the new constant from forms.py
-from forms import ProductForm, ProfileForm, StreamForm, REDDIT_COMMUNITY_CHOICES
-
+from forms import ProductForm, ProfileForm, StreamForm, REDDIT_COMMUNITY_CHOICES, ManualSubscriptionForm
+from blueprints.emails import send_subscription_request_email_to_admin # You will need to create this email function
 from models import Product, Stream, Lead, Subscription, PlanLimit, Profile
 from extensions import db, razorpay_client, csrf
 from flask_login import login_required, current_user
@@ -149,6 +149,37 @@ def pricing():
     reason = request.args.get('reason')
     return render_template('pricing.html', reason=reason)
 
+# **NEW:** Route for the manual pricing page
+@main_bp.route('/pricing-manual')
+@login_required
+def pricing_manual():
+    form = ManualSubscriptionForm()
+    # Pre-populate form if user is logged in
+    if current_user.is_authenticated:
+        form.username.data = current_user.username
+        form.email.data = current_user.email
+        form.phone.data = current_user.phone
+    return render_template('pricing_manual.html', form=form)
+
+# **NEW:** Route to handle the manual subscription request
+@main_bp.route('/request-subscription', methods=['POST'])
+def request_subscription():
+    form = ManualSubscriptionForm()
+    if form.validate_on_submit():
+        # Send an email to yourself (the admin) with the user's details
+        send_subscription_request_email_to_admin(
+            username=form.username.data,
+            email=form.email.data,
+            phone=form.phone.data,
+            plan_type=form.plan_type.data,
+            reason=form.reason.data
+        )
+        flash("Thank you for your interest! We have received your request and will contact you via email within 24 hours to complete the process.", "success")
+        return redirect(url_for('main.pricing_manual'))
+        
+    flash("There was an error with your submission. Please try again.", "danger")
+    return redirect(url_for('main.pricing_manual'))
+
 @main_bp.route('/settings', methods=['GET'])
 @login_required
 def settings():
@@ -200,13 +231,16 @@ def create_subscription():
     if plan_type not in plan_ids:
         return jsonify({'error': 'Invalid plan type'}), 400
 
-    # **FIX 1: Check the user's active plan on the Profile model, not the Subscription model**
-    if current_user.plan != 'free':
-        flash('You already have an active subscription. Please manage it from your settings.', 'info')
-        return jsonify({'error': 'Active subscription already exists'}), 400
+    # **MODIFIED:** Find the user's current subscription record.
+    current_sub = Subscription.query.filter_by(user_id=user_id).first()
+    
+    # **MODIFIED:** Block creation only if they have an ACTIVE, AUTOMATED (Razorpay) subscription.
+    # This now allows users with manual or free plans to upgrade.
+    if current_sub and current_sub.status == 'active' and current_sub.razorpay_subscription_id:
+        flash('You already have an active, automated subscription. Please manage it from your settings.', 'info')
+        return jsonify({'error': 'Active Razorpay subscription already exists'}), 400
 
     try:
-        # **FIX 2: Create or retrieve a Razorpay Customer first**
         if not current_user.razorpay_customer_id:
             customer_payload = {
                 "name": current_user.username,
@@ -226,9 +260,6 @@ def create_subscription():
             'notes': {'user_id': str(user_id), 'plan_type': plan_type}
         }
         rzp_subscription = razorpay_client.subscription.create(subscription_payload)
-        
-        # **FIX 3: DO NOT create a Subscription record here.**
-        # We only return the details needed for checkout.
         
         return jsonify({
             'subscription_id': rzp_subscription['id'],
@@ -268,15 +299,10 @@ def razorpay_webhook():
             current_app.logger.error(f"Webhook received for unknown user ID: {user_id}")
             return jsonify({'status': 'error'}), 404
 
-        # **FIX 4: This is the ONLY place a subscription record is created.**
-        # Check if a subscription with this ID already exists to prevent duplicates.
-        existing_sub = Subscription.query.filter_by(razorpay_subscription_id=rzp_sub_id).first()
-        if existing_sub:
-            current_app.logger.warning(f"Webhook for already existing subscription ID {rzp_sub_id} received. Ignoring.")
-            return jsonify({'status': 'success'})
-
-        # Delete the old 'free' subscription if it exists
-        Subscription.query.filter_by(user_id=user_id, plan_type='free').delete()
+        # **MODIFIED:** Delete ALL previous subscriptions for this user (free or manual)
+        # to ensure a clean slate before creating the new active one.
+        Subscription.query.filter_by(user_id=user_id).delete()
+        db.session.commit()
         
         new_sub = Subscription(
             user_id=user_id,
@@ -285,7 +311,6 @@ def razorpay_webhook():
             razorpay_subscription_id=rzp_sub_id,
             current_period_end=datetime.fromtimestamp(subscription_data['current_end'], tz=timezone.utc)
         )
-        # Also update the user's main plan status
         user.plan = plan_type
         
         db.session.add(new_sub)
@@ -295,7 +320,6 @@ def razorpay_webhook():
         current_app.logger.info(f"Subscription {new_sub.id} for user {user.id} was CREATED and ACTIVATED.")
 
     elif event_type == 'subscription.charged':
-        # This handles recurring payments
         subscription_data = event['payload']['subscription']['entity']
         rzp_sub_id = subscription_data['id']
         

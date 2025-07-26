@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, SelectField, TextAreaField, RadioField
+from wtforms import StringField, PasswordField, SubmitField, SelectField, TextAreaField, RadioField, DateField
 # **FIX:** Import the 'Optional' validator
 from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError, Optional
 
@@ -86,3 +86,18 @@ class ProfileForm(FlaskForm):
         ('Europe/London', 'GMT (London)')
     ], validators=[DataRequired()])
     submit = SubmitField('Save Changes')
+
+# **NEW:** Form for the manual subscription request modal
+class ManualSubscriptionForm(FlaskForm):
+    username = StringField('Your Name', validators=[DataRequired()])
+    email = StringField('Your Email', validators=[DataRequired(), Email()])
+    phone = StringField('Your Phone Number (Optional)', validators=[Optional()])
+    plan_type = StringField('Selected Plan') # Will be hidden
+    reason = TextAreaField('Reason for Interest (Optional)')
+    submit = SubmitField('Submit Request')
+
+# **NEW:** Form for the admin panel to grant subscriptions
+class AdminGrantSubscriptionForm(FlaskForm):
+    plan_type = SelectField('Plan Type', choices=[('founder', 'Founder'), ('scale', 'Scale')], validators=[DataRequired()])
+    expiry_date = DateField('Subscription Expiry Date', format='%Y-%m-%d', validators=[DataRequired()])
+    submit = SubmitField('Grant/Update Subscription')

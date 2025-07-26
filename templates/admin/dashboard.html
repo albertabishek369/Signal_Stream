@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="container" style="padding-top: 2rem;">
+    <h1>Admin Dashboard</h1>
+    <p>Manage all users and their subscriptions.</p>
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="text-align: left; border-bottom: 1px solid #ccc;">
+                <th>Username</th>
+                <th>Email</th>
+                <th>Current Plan</th>
+                <th>Sub Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.plan|capitalize }}</td>
+                <td>{{ user.subscription.status|capitalize if user.subscription else 'N/A' }}</td>
+                <td><a href="{{ url_for('admin.manage_user', user_id=user.id) }}" class="btn">Manage</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

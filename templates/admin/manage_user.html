@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Manage {{ user.username }}{% endblock %}
+{% block content %}
+<div class="container" style="padding-top: 2rem; max-width: 600px;">
+    <h1>Manage Subscription for {{ user.username }}</h1>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Current Plan:</strong> {{ user.plan|capitalize }}</p>
+
+    <form method="POST" class="content-card" style="margin-top: 2rem;">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.plan_type.label }}
+            {{ form.plan_type(class="form-select") }}
+        </div>
+        <div class="form-group">
+            {{ form.expiry_date.label }}
+            {{ form.expiry_date(class="form-input") }}
+        </div>
+        <div class="form-actions">
+            {{ form.submit(class="btn") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

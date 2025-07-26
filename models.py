@@ -18,6 +18,8 @@ class Profile(db.Model, UserMixin):
     google_id = db.Column(db.Text, unique=True, nullable=True)
     plan = db.Column(db.Text, nullable=False, default='free')
 
+        # **NEW:** Add this field to identify admin users
+    is_admin = db.Column(db.Boolean, default=False, nullable=False)
     # **NEW:** Add this field to store the Razorpay customer ID
     razorpay_customer_id = db.Column(db.Text, unique=True, nullable=True)
     # Relationships

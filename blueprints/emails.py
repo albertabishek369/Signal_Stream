@@ -37,3 +37,25 @@ def send_downgrade_email(user):
     subject = "Your Signal Stream Plan Has Expired"
     body = f"Hi {user.username},\n\nYour paid subscription has ended. Your account has been moved to our Free plan.\n\nYou can upgrade again at any time from the pricing page to regain access to premium features.\n\nThanks,\nThe Signal Stream Team"
     send_email(subject, [user.email], body)
+
+def send_subscription_request_email_to_admin(username, email, phone, plan_type, reason):
+    """Sends a notification to the admin about a new manual subscription request."""
+    subject = f"New Subscription Request: {plan_type.capitalize()} Plan"
+    admin_email = current_app.config['ADMIN_EMAIL'] # Add ADMIN_EMAIL to your config
+    body = f"""
+    A new manual subscription request has been submitted.
+
+    User Details:
+    - Username: {username}
+    - Email: {email}
+    - Phone: {phone or 'Not provided'}
+    
+    Requested Plan: {plan_type.capitalize()}
+    
+    Reason for Interest:
+    {reason or 'Not provided'}
+
+    Please follow up with the user via email to arrange payment.
+    Once payment is confirmed, grant them access via the admin dashboard.
+    """
+    send_email(subject, [admin_email], body)
