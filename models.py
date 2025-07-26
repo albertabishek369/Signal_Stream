@@ -82,6 +82,10 @@ class Stream(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     execution_frequency_minutes = db.Column(db.Integer, nullable=False)
     last_executed_at = db.Column(db.DateTime, nullable=True)
+    # **NEW:** Add this field to enable round-robin scheduling.
+    # It defaults to the creation time to ensure new streams enter the rotation.
+    last_picked_at = db.Column(db.DateTime, nullable=True, default=lambda: datetime.now(timezone.utc))
+    
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     status = db.Column(db.Text, default='active')
     status_message = db.Column(db.Text, nullable=True)
