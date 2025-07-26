@@ -144,6 +144,7 @@ def new_stream():
     return render_template('new_stream.html', form=form, products=products, streams=streams)
 
 @main_bp.route('/pricing')
+@login_required
 def pricing():
     reason = request.args.get('reason')
     return render_template('pricing.html', reason=reason)
