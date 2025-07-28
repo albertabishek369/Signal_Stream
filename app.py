@@ -19,16 +19,20 @@ from blueprints.emails import send_renewal_reminder_email, send_downgrade_email
 load_dotenv()
 
 def check_subscriptions(app):
+    """
+    A daily job to check all subscription statuses and handle expirations.
+    """
     with app.app_context():
         print("Scheduler: Running daily subscription check...")
-        today = datetime.now(timezone.utc).date()
-        
-        # ... (Your existing logic for renewal reminders is fine) ...
-        
-        # **MODIFIED:** Downgrade expired MANUAL and FAILED Razorpay subscriptions
+        now = datetime.now(timezone.utc)
+        today = now.date()
+        one_day_ago = now - timedelta(days=1)
+
+        # --- Part 1: Handle Expired Paid Subscriptions (Both Manual and Razorpay) ---
+        # This finds any plan whose end date is in the past.
         expired_subscriptions = Subscription.query.filter(
             Subscription.plan_type != 'free',
-            db.func.date(Subscription.current_period_end) < today
+            Subscription.current_period_end < now
         ).all()
 
         for sub in expired_subscriptions:
@@ -36,25 +40,44 @@ def check_subscriptions(app):
             print(f"Scheduler: Downgrading user {user.id}, subscription {sub.id} has expired.")
             
             # Delete extra streams, keeping the oldest one
-            streams_to_delete = Stream.query.filter_by(user_id=user.id).order_by(Stream.created_at.asc()).offset(1).all()
-            for stream in streams_to_delete:
-                # Deleting a stream will cascade-delete its leads due to your model setup
-                db.session.delete(stream)
+            streams_to_keep = 1
+            user_streams = Stream.query.filter_by(user_id=user.id).order_by(Stream.created_at.asc()).all()
+            if len(user_streams) > streams_to_keep:
+                for stream_to_delete in user_streams[streams_to_keep:]:
+                    db.session.delete(stream_to_delete)
 
             # Update user's plan back to free
             user.plan = 'free'
             # Delete the expired subscription record
             db.session.delete(sub)
             
-            # Optionally, create a new 'free' subscription record
+            # Create a new 'free' subscription record
             free_sub = Subscription(user_id=user.id, plan_type='free', status='active')
             db.session.add(free_sub)
             
-            send_downgrade_email(user) # Your existing email function
+            send_downgrade_email(user)
         
-        db.session.commit()
-        print("Scheduler: Subscription check finished.")
+        db.session.commit() # Commit after the first batch of changes
 
+        # --- Part 2: Clean Up Unpaid "Created" Subscriptions ---
+        # This finds any Razorpay subscription that was created more than a day ago
+        # but was never paid and activated.
+        stale_created_subscriptions = Subscription.query.filter(
+            Subscription.status == 'created',
+            Subscription.created_at < one_day_ago
+        ).all()
+
+        for sub in stale_created_subscriptions:
+            user = sub.profile
+            print(f"Scheduler: Deleting stale 'created' subscription {sub.id} for user {user.id}.")
+            # The user's plan on the Profile model was never upgraded, so we just delete
+            # the abandoned subscription record.
+            db.session.delete(sub)
+
+        db.session.commit() # Commit after the second batch of changes
+
+        print("Scheduler: Subscription check finished.")
+        
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
