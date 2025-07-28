@@ -8,6 +8,8 @@ from blueprints.auth import auth_bp
 from blueprints.main import main_bp
 from blueprints.oauth import oauth_bp, oauth
 from blueprints.admin import admin_bp # **NEW:** Import the admin blueprint
+# **FIX:** Import the new commands blueprint
+from blueprints.commands import commands_bp
 from extensions import db, csrf, mail
 from config import Config
 from flask_migrate import Migrate
@@ -77,7 +79,7 @@ def check_subscriptions(app):
         db.session.commit() # Commit after the second batch of changes
 
         print("Scheduler: Subscription check finished.")
-        
+
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
@@ -106,25 +108,27 @@ def create_app(config_class=Config):
     app.register_blueprint(main_bp)
     app.register_blueprint(oauth_bp)
     app.register_blueprint(admin_bp) # **NEW:** Register the admin blueprint
+    # **FIX:** Register the new commands blueprint
+    app.register_blueprint(commands_bp)
 
     @login_manager.user_loader
     def load_user(user_id):
         return db.session.get(Profile, user_id)
 
-    # Initialize and start scheduler
-    scheduler = APScheduler()
-    scheduler.init_app(app)
+    # # Initialize and start scheduler
+    # scheduler = APScheduler()
+    # scheduler.init_app(app)
     
-    # Schedule the job to run once a day
-    if not scheduler.get_job('check_subscriptions_daily'):
-        scheduler.add_job(
-            id='check_subscriptions_daily',
-            func=check_subscriptions,
-            args=[app],
-            trigger='interval',
-            days=1
-        )
-    scheduler.start()
+    # # Schedule the job to run once a day
+    # if not scheduler.get_job('check_subscriptions_daily'):
+    #     scheduler.add_job(
+    #         id='check_subscriptions_daily',
+    #         func=check_subscriptions,
+    #         args=[app],
+    #         trigger='interval',
+    #         days=1
+    #     )
+    # scheduler.start()
     
     with app.app_context():
         db.create_all()  # Ensure all tables are created
